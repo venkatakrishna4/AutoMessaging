@@ -1,6 +1,8 @@
 package com.krish.automessaging.datamodel.pojo.es;
 
 import com.krish.automessaging.utils.Utils;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Objects;
 
@@ -10,6 +12,7 @@ import java.util.Objects;
  * @param <T>
  *            the type parameter
  */
+
 public class PersistenceAudit<T extends PersistenceAudit<T>> implements Comparable<T>, BaseElasticObject {
     private final String id = Utils.generateUUID();
     private String createdBy;

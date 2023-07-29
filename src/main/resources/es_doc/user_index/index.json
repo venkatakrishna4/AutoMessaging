@@ -21,6 +21,17 @@
           }
         }
       },
+      "username": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
       "password": {
         "type": "text",
         "store": true,
