@@ -1,0 +1,4 @@
+# Setting up dev profile for development purpose
+spring:
+  profiles:
+    active: dev

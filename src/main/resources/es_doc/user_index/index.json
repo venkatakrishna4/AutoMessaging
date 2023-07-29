@@ -1,0 +1,195 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword",
+        "store": true,
+        "index": true
+      },
+      "name": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "password": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "email": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "roles": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "disabled": {
+        "type": "boolean",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "passwordResetKey": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "phone": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "loggedInTime": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "ttlEnabled": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "createdBy": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "updatedBy": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "createdTime": {
+        "type": "long",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "lastUpdatedTime": {
+        "type": "long",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "userPreferences": {
+        "properties": {
+          "logoId": {
+            "type": "text",
+            "store": true,
+            "index": true,
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "theme": {
+            "type": "text",
+            "store": true,
+            "index": true,
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "meta": {
+        "type": "text",
+        "store": true,
+        "index": true,
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}

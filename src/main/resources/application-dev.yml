@@ -1,0 +1,31 @@
+########################################################################
+###### All the properties set up here are for development use only #####
+########################################################################
+
+# Setting up the Tomcat Server port
+server:
+  port: 6060
+
+# Setting up the Logging level
+logging:
+  level:
+    root: debug
+
+# Setting Jasypt Encryptor Password
+jasypt:
+  password: krishna
+
+# Setting up the elasticsearch host
+elastic:
+  host: http://localhost:6100
+  username: ENC(0gLucS/6Ia0T+af0iHeSPw==)
+  password: ENC(RnHUlRzG/LzKvMsoMnYlUw==)
+  secure: true
+  tenant: local
+
+# Setting up Admin login username and password
+# Username - krishna
+# Password - krishna
+login:
+  username: ENC(RnHUlRzG/LzKvMsoMnYlUw==)
+  password: $2a$12$k9zbyDmaWo8GumZ8UqSDD.N9bt8TYKL/U5HJJS/eOUQ6mPVSZqrQC
