@@ -50,8 +50,8 @@ public class AdminElasticServiceImpl implements AdminElasticService {
 
     @Override
     public void createIndex(String index, InputStream json) throws ElasticsearchException, IOException {
-        final boolean isCreated = client.indices().create(indexRequest -> indexRequest.index(index).withJson(json))
-                .acknowledged();
+        final boolean isCreated = client.indices()
+                .create(indexRequest -> indexRequest.index(getFinalIndex(index)).withJson(json)).acknowledged();
         if (isCreated) {
             log.info("Created new index: {}", getFinalIndex(index));
         } else {

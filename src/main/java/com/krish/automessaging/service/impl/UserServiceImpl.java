@@ -2,6 +2,7 @@ package com.krish.automessaging.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.CreateRequest;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
@@ -72,8 +73,9 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(userRequestRecord.password()))
                 .email(getTrimmedValue(StringUtils.lowerCase(userRequestRecord.email())))
                 .phone(getTrimmedValue(userRequestRecord.phone())).build();
+        utils.setAuditProperties(newUser);
         log.debug("Inserting user {} into Elasticsearch", newUser);
-        client.create(CreateRequest.of(insertUserRequest -> insertUserRequest.index(utils.getFinalIndex(INDEX_NAME))
+        client.index(IndexRequest.of(insertUserRequest -> insertUserRequest.index(utils.getFinalIndex(INDEX_NAME))
                 .id(newUser.getId()).document(newUser)));
 
         return newUser.getId();

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +36,7 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("User not found " + username);
         }
         try {
-            Optional<User> existingUser = userUtils.getUserByUsernameOrEmail(username);
+            Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(username);
             if (existingUser.isPresent()) {
                 existingUser.map(this::createSpringUser);
             }

@@ -28,15 +28,15 @@ public class UserUtils {
         this.utils = utils;
     }
 
-    public Optional<User> getUserByUsernameOrEmail(String value) throws IOException {
+    public Optional<User> getUserByUsernameOrEmailOrID(String value) throws IOException {
         SearchResponse<User> searchResponse = client.search(SearchRequest.of(searchRequest -> searchRequest
                 .index(utils.getFinalIndex(USER_INDEX_NAME))
                 .query(QueryBuilders.bool()
-                        .must(QueryBuilders.match().field("email.keyword").query(StringUtils.lowerCase(value)).build()
+                        .should(QueryBuilders.term().field("email.keyword").value(StringUtils.lowerCase(value)).build()
                                 ._toQuery())
-                        .should(QueryBuilders.match().field("username.keyword").query(StringUtils.lowerCase(value))
+                        .should(QueryBuilders.term().field("username.keyword").value(StringUtils.lowerCase(value))
                                 .build()._toQuery())
-                        .build()._toQuery())
+                        .should(QueryBuilders.term().field("id").value(value).build()._toQuery()).build()._toQuery())
                 .searchType(SearchType.DfsQueryThenFetch)), User.class);
         List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
         if (ObjectUtils.isNotEmpty(users)) {
@@ -46,6 +46,6 @@ public class UserUtils {
     }
 
     public boolean isEmailExists(String value) throws IOException {
-        return getUserByUsernameOrEmail(value).isPresent();
+        return getUserByUsernameOrEmailOrID(value).isPresent();
     }
 }

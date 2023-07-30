@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.krish.automessaging.datamodel.pojo.es.PersistenceAudit;
 import lombok.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = true)
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @ToString(callSuper = true)
 public class User extends PersistenceAudit<User> {
@@ -19,7 +20,7 @@ public class User extends PersistenceAudit<User> {
     private String password;
     private String email;
     private boolean disabled;
-    private List<String> roles = Arrays.asList("USER");
+    private List<String> roles = List.of("USER");
     private String passwordResetKey;
     private String phone;
     private long loggedInTime = System.currentTimeMillis();
