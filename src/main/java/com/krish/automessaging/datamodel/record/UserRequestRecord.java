@@ -1,10 +1,9 @@
 package com.krish.automessaging.datamodel.record;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.*;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * The type User request record.

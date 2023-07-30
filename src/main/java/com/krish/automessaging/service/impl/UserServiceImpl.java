@@ -1,19 +1,24 @@
 package com.krish.automessaging.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.CreateRequest;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.krish.automessaging.datamodel.pojo.User;
+import com.krish.automessaging.datamodel.pojo.audit.GeneralAudit;
 import com.krish.automessaging.datamodel.record.PaginatedResponseRecord;
 import com.krish.automessaging.datamodel.record.UserRequestRecord;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
+import com.krish.automessaging.enums.IndexEnum;
 import com.krish.automessaging.exception.custom.EmailExistsException;
 import com.krish.automessaging.service.UserService;
+import com.krish.automessaging.utils.AuditUtils;
+import com.krish.automessaging.utils.AuthUtils;
 import com.krish.automessaging.utils.UserUtils;
 import com.krish.automessaging.utils.Utils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,21 +36,26 @@ public class UserServiceImpl implements UserService {
     private final PhoneNumberUtil phoneNumberUtil;
     private final UserUtils userUtils;
     private final Utils utils;
+    private final AuditUtils auditUtils;
+    private final AuthUtils authUtils;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public UserServiceImpl(final ElasticsearchClient client, final PasswordEncoder passwordEncoder,
-            final PhoneNumberUtil phoneNumberUtil, UserUtils userUtils, Utils utils) {
+            final PhoneNumberUtil phoneNumberUtil, UserUtils userUtils, Utils utils, AuditUtils auditUtils,
+            AuthUtils authUtils, ObjectMapper objectMapper) {
         this.client = client;
         this.passwordEncoder = passwordEncoder;
         this.phoneNumberUtil = phoneNumberUtil;
         this.userUtils = userUtils;
         this.utils = utils;
+        this.auditUtils = auditUtils;
+        this.authUtils = authUtils;
+        this.objectMapper = objectMapper;
     }
 
-    private static final String INDEX_NAME = "user_index";
-
     @Override
-    public String createUser(UserRequestRecord userRequestRecord) throws IOException {
+    public String createUser(UserRequestRecord userRequestRecord, HttpServletRequest request) throws IOException {
         log.debug("Received Request to create user\n{}", userRequestRecord);
         /*
          * Validate Phone Number
@@ -75,9 +85,13 @@ public class UserServiceImpl implements UserService {
                 .phone(getTrimmedValue(userRequestRecord.phone())).build();
         utils.setAuditProperties(newUser);
         log.debug("Inserting user {} into Elasticsearch", newUser);
-        client.index(IndexRequest.of(insertUserRequest -> insertUserRequest.index(utils.getFinalIndex(INDEX_NAME))
-                .id(newUser.getId()).document(newUser)));
+        client.index(IndexRequest.of(insertUserRequest -> insertUserRequest
+                .index(utils.getFinalIndex(IndexEnum.user_index.toString())).id(newUser.getId()).document(newUser)));
 
+        auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(newUser.getId())
+                .objectClass(User.class).oldObject(null).newObject(objectMapper.writeValueAsString(newUser))
+                .action(GeneralAudit.Audit.ADD.toString()).comments("New User is getting subscribed from UI")
+                .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(request)).build());
         return newUser.getId();
     }
 

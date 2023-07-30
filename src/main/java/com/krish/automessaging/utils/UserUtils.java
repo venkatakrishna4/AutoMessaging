@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.krish.automessaging.datamodel.pojo.User;
+import com.krish.automessaging.enums.IndexEnum;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ import java.util.Optional;
 public class UserUtils {
     private final ElasticsearchClient client;
     private final Utils utils;
-    private final static String USER_INDEX_NAME = "user_index";
 
     @Autowired
     public UserUtils(final ElasticsearchClient client, final Utils utils) {
@@ -30,7 +30,7 @@ public class UserUtils {
 
     public Optional<User> getUserByUsernameOrEmailOrID(String value) throws IOException {
         SearchResponse<User> searchResponse = client.search(SearchRequest.of(searchRequest -> searchRequest
-                .index(utils.getFinalIndex(USER_INDEX_NAME))
+                .index(utils.getFinalIndex(IndexEnum.user_index.toString()))
                 .query(QueryBuilders.bool()
                         .should(QueryBuilders.term().field("email.keyword").value(StringUtils.lowerCase(value)).build()
                                 ._toQuery())

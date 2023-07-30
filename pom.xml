@@ -151,7 +151,8 @@
           <encoding>${project.build.sourceEncoding}</encoding>
           <sortProperties>true</sortProperties>
           <keepBlankLines>true</keepBlankLines>
-          <sortDependencies>scope</sortDependencies>
+          <sortDependencies>true</sortDependencies>
+          <sortPlugins>true</sortPlugins>
         </configuration>
       </plugin>
     </plugins>

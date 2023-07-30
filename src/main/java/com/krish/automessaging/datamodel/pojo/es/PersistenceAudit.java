@@ -1,8 +1,6 @@
 package com.krish.automessaging.datamodel.pojo.es;
 
 import com.krish.automessaging.utils.Utils;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.Objects;
 

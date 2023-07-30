@@ -1,9 +1,9 @@
 package com.krish.automessaging.service;
 
-import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.record.PaginatedResponseRecord;
 import com.krish.automessaging.datamodel.record.UserRequestRecord;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +20,7 @@ public interface UserService extends BaseServiceProvider<String> {
      *
      * @return the string
      */
-    String createUser(UserRequestRecord userRequestRecord) throws IOException;
+    String createUser(UserRequestRecord userRequestRecord, HttpServletRequest request) throws IOException;
 
     /**
      * Gets user.
