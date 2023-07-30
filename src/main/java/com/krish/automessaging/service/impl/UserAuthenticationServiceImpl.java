@@ -2,6 +2,7 @@ package com.krish.automessaging.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.krish.automessaging.datamodel.pojo.User;
+import com.krish.automessaging.service.JsonParserService;
 import com.krish.automessaging.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -23,11 +25,14 @@ import java.util.Optional;
 public class UserAuthenticationServiceImpl implements UserDetailsService {
     private final ElasticsearchClient client;
     private final UserUtils userUtils;
+    private final JsonParserService jsonParserService;
 
     @Autowired
-    public UserAuthenticationServiceImpl(final ElasticsearchClient client, final UserUtils userUtils) {
+    public UserAuthenticationServiceImpl(final ElasticsearchClient client, final UserUtils userUtils,
+            JsonParserService jsonParserService) {
         this.client = client;
         this.userUtils = userUtils;
+        this.jsonParserService = jsonParserService;
     }
 
     @Override
@@ -38,7 +43,8 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
         try {
             Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(username);
             if (existingUser.isPresent()) {
-                existingUser.map(this::createSpringUser);
+                return existingUser.map(this::createSpringUser)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found " + username));
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -47,10 +53,16 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
     }
 
     private org.springframework.security.core.userdetails.User createSpringUser(User user) {
-        // TODO: 29/07/23 Create Privileges for User and Admin
+        List<String> privileges = new ArrayList<>();
+        try {
+            Map<String, List<String>> privilegesJson = jsonParserService.parsePrivilegesJson();
+            user.getRoles().forEach(u -> privileges.addAll(privilegesJson.get(u)));
+        } catch (IOException ignored) {
+
+        }
         List<GrantedAuthority> authorities = new ArrayList<>(
-                user.getRoles().stream().map(SimpleGrantedAuthority::new).toList());
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), "", !user.isDisabled(), true,
-                true, true, authorities);
+                privileges.stream().map(SimpleGrantedAuthority::new).toList());
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+                !user.isDisabled(), true, true, true, authorities);
     }
 }
