@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -29,6 +31,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class SecurityConfiguration {
 
     @Value("${login.username}")
@@ -58,8 +61,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.cors(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers("/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/user/public").permitAll().requestMatchers("/api/**")
-                        .hasRole("ADMIN").anyRequest().authenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user/public").permitAll().anyRequest()
+                        .authenticated())
                 .authenticationManager(
                         new ProviderManager(inMemoryAuthenticationProvider(), userDetailsAuthenticationProvider()))
                 .httpBasic(Customizer.withDefaults()).formLogin(Customizer.withDefaults())

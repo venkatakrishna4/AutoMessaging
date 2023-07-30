@@ -34,27 +34,27 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('PRIVILEGE_USER_GET')")
+    @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_GET', 'ROLE_ADMIN'})")
     public ResponseEntity<UserResponseRecord> getUser(
             @NotBlank(message = "Valid ID required to find user") @PathVariable String id) throws IOException {
         return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('PRIVILEGE_USER_GET')")
+    @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_GET', 'ROLE_ADMIN'})")
     public ResponseEntity<PaginatedResponseRecord<List<UserResponseRecord>>> getUsers() throws IOException {
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
     @PatchMapping
-    @PreAuthorize("hasAuthority('PRIVILEGE_USER_UPDATE')")
+    @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_UPDATE', 'ROLE_ADMIN'})")
     public ResponseEntity<String> updateUser(@Valid @RequestBody UserRequestRecord userRequestRecord,
             HttpServletRequest servletRequest) throws IOException {
         return new ResponseEntity<>(userService.updateUser(userRequestRecord, servletRequest), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('PRIVILEGE_USER_DELETE')")
+    @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_DELETE', 'ROLE_ADMIN'})")
     public ResponseEntity<Object> deleteUser(
             @NotBlank(message = "Valid ID required to delete user") @PathVariable String id,
             HttpServletRequest servletRequest) throws IOException {
