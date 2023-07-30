@@ -10,6 +10,7 @@ import java.util.Objects;
  * @param <T>
  *            the type parameter
  */
+
 public class PersistenceAudit<T extends PersistenceAudit<T>> implements Comparable<T>, BaseElasticObject {
     private final String id = Utils.generateUUID();
     private String createdBy;

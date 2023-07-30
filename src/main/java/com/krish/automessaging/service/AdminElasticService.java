@@ -3,7 +3,6 @@ package com.krish.automessaging.service;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.krish.automessaging.datamodel.pojo.es.BaseElasticObject;
 import com.krish.automessaging.datamodel.pojo.es.ChangeLog;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;

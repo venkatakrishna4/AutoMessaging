@@ -10,7 +10,7 @@
         "store": true,
         "index": true
       },
-      "name": {
+      "ownerObjectId": {
         "type": "text",
         "store": true,
         "index": true,
@@ -21,7 +21,22 @@
           }
         }
       },
-      "username": {
+      "objectClass": {
+        "type": "text",
+        "store": true,
+        "index": true
+      },
+      "oldObject": {
+        "type": "text",
+        "store": true,
+        "index": true
+      },
+      "newObject": {
+        "type": "text",
+        "store": true,
+        "index": true
+      },
+      "action": {
         "type": "text",
         "store": true,
         "index": true,
@@ -32,40 +47,7 @@
           }
         }
       },
-      "password": {
-        "type": "text",
-        "store": true,
-        "index": true,
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "email": {
-        "type": "text",
-        "store": true,
-        "index": true,
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "roles": {
-        "type": "text",
-        "store": true,
-        "index": true,
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "disabled": {
+      "reason": {
         "type": "boolean",
         "store": true,
         "index": true,
@@ -76,7 +58,12 @@
           }
         }
       },
-      "passwordResetKey": {
+      "comments": {
+        "type": "text",
+        "store": true,
+        "index": true
+      },
+      "loggedInUserId": {
         "type": "text",
         "store": true,
         "index": true,
@@ -87,18 +74,7 @@
           }
         }
       },
-      "phone": {
-        "type": "text",
-        "store": true,
-        "index": true,
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "loggedInTime": {
+      "clientIP": {
         "type": "text",
         "store": true,
         "index": true,

@@ -59,7 +59,12 @@ public class ElasticsearchConfiguration {
      */
     @Bean
     public ElasticsearchTransport getTransport() {
-        return new RestClientTransport(getRestClient(), new JacksonJsonpMapper());
+        return new RestClientTransport(getRestClient(), jacksonJsonpMapper());
+    }
+
+    @Bean
+    public JacksonJsonpMapper jacksonJsonpMapper() {
+        return new JacksonJsonpMapper();
     }
 
     /**
