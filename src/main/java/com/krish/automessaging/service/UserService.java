@@ -16,11 +16,11 @@ public interface UserService extends BaseServiceProvider<String> {
      * Create user string.
      *
      * @param userRequestRecord
-     *            the user request record
+     *            the user servletRequest record
      *
      * @return the string
      */
-    String createUser(UserRequestRecord userRequestRecord, HttpServletRequest request) throws IOException;
+    String createUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest) throws IOException;
 
     /**
      * Gets user.
@@ -30,24 +30,24 @@ public interface UserService extends BaseServiceProvider<String> {
      *
      * @return the user
      */
-    UserResponseRecord getUser(String id);
+    UserResponseRecord getUser(String id) throws IOException;
 
     /**
      * Gets all users.
      *
      * @return the all users
      */
-    PaginatedResponseRecord<List<UserResponseRecord>> getAllUsers();
+    PaginatedResponseRecord<List<UserResponseRecord>> getAllUsers() throws IOException;
 
     /**
      * Update user string.
      *
      * @param userRequestRecord
-     *            the user request record
+     *            the user servletRequest record
      *
      * @return the string
      */
-    String updateUser(UserRequestRecord userRequestRecord);
+    String updateUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest) throws IOException;
 
     /**
      * Delete user.
@@ -55,5 +55,5 @@ public interface UserService extends BaseServiceProvider<String> {
      * @param id
      *            the id
      */
-    void deleteUser(String id);
+    void deleteUser(String id, HttpServletRequest servletRequest) throws IOException;
 }

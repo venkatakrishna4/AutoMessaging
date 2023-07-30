@@ -1,11 +1,10 @@
 package com.krish.automessaging.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.*;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
 import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.pojo.audit.GeneralAudit;
 import com.krish.automessaging.datamodel.record.PaginatedResponseRecord;
@@ -27,13 +26,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final ElasticsearchClient client;
     private final PasswordEncoder passwordEncoder;
-    private final PhoneNumberUtil phoneNumberUtil;
     private final UserUtils userUtils;
     private final Utils utils;
     private final AuditUtils auditUtils;
@@ -41,12 +41,10 @@ public class UserServiceImpl implements UserService {
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public UserServiceImpl(final ElasticsearchClient client, final PasswordEncoder passwordEncoder,
-            final PhoneNumberUtil phoneNumberUtil, UserUtils userUtils, Utils utils, AuditUtils auditUtils,
-            AuthUtils authUtils, ObjectMapper objectMapper) {
+    public UserServiceImpl(final ElasticsearchClient client, final PasswordEncoder passwordEncoder, UserUtils userUtils,
+            Utils utils, AuditUtils auditUtils, AuthUtils authUtils, ObjectMapper objectMapper) {
         this.client = client;
         this.passwordEncoder = passwordEncoder;
-        this.phoneNumberUtil = phoneNumberUtil;
         this.userUtils = userUtils;
         this.utils = utils;
         this.auditUtils = auditUtils;
@@ -55,19 +53,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String createUser(UserRequestRecord userRequestRecord, HttpServletRequest request) throws IOException {
+    public String createUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest)
+            throws IOException {
         log.debug("Received Request to create user\n{}", userRequestRecord);
         /*
          * Validate Phone Number
          */
-        try {
-            Phonenumber.PhoneNumber phoneNumber = phoneNumberUtil.parse(userRequestRecord.phone(),
-                    Phonenumber.PhoneNumber.CountryCodeSource.UNSPECIFIED.toString());
-            if (!phoneNumberUtil.isValidNumber(phoneNumber)) {
-                throw new IllegalArgumentException("Enter valid phone number");
-            }
-        } catch (NumberParseException e) {
-            log.error(e.getMessage(), e);
+        if (!userUtils.isValidaPhoneNumber(userRequestRecord.phone())) {
+            throw new IllegalArgumentException("Enter valid phone number");
         }
         /*
          * Email Address should be unique
@@ -91,28 +84,65 @@ public class UserServiceImpl implements UserService {
         auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(newUser.getId())
                 .objectClass(User.class).oldObject(null).newObject(objectMapper.writeValueAsString(newUser))
                 .action(GeneralAudit.Audit.ADD.toString()).comments("New User is getting subscribed from UI")
-                .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(request)).build());
-        return newUser.getId();
+                .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest)).build());
+        return "User created successfully";
     }
 
     @Override
-    public UserResponseRecord getUser(String id) {
-        return null;
+    public UserResponseRecord getUser(String id) throws IOException {
+        return userUtils.getUserByUsernameOrEmailOrID(id).map(userUtils::mapToUserResponseRecord)
+                .orElseThrow(() -> new NoSuchElementException("User not found for id " + id));
     }
 
     @Override
-    public PaginatedResponseRecord<List<UserResponseRecord>> getAllUsers() {
-        return null;
+    public PaginatedResponseRecord<List<UserResponseRecord>> getAllUsers() throws IOException {
+        // TODO: 30/07/23 Implement Pagination
+        SearchResponse<User> searchResponse = client.search(
+                SearchRequest.of(searchRequest -> searchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                        .query(QueryBuilders.matchAll().build()._toQuery())),
+                User.class);
+        return new PaginatedResponseRecord<>(searchResponse.hits().hits().stream().map(Hit::source)
+                .map(userUtils::mapToUserResponseRecord).toList());
     }
 
     @Override
-    public String updateUser(UserRequestRecord userRequestRecord) {
-        return null;
+    public String updateUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest)
+            throws IOException {
+        log.debug("Received Request to update user\n{}", userRequestRecord);
+        /*
+         * Validate Phone Number
+         */
+        if (!userUtils.isValidaPhoneNumber(userRequestRecord.phone())) {
+            throw new IllegalArgumentException("Enter valid phone number");
+        }
+        if (!userUtils.isEmailAndUsernameAssociatedToID(userRequestRecord.id(), userRequestRecord.email(),
+                userRequestRecord.username())) {
+            throw new IllegalArgumentException("Email Address cannot be updated");
+        }
+        Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(userRequestRecord.id());
+        existingUser.map(user -> {
+            user.setName(getTrimmedValue(userRequestRecord.name()));
+            user.setPassword(userRequestRecord.password());
+            user.setPhone(userRequestRecord.phone());
+            return user;
+        }).orElseThrow(() -> new NoSuchElementException("User not found for id " + userRequestRecord.id()));
+        IndexRequest<User> indexRequest = IndexRequest.of(request -> request
+                .index(utils.getFinalIndex(IndexEnum.user_index.name())).document(existingUser.get()));
+        client.update(UpdateRequest.of(updateRequest -> updateRequest
+                .index(utils.getFinalIndex(IndexEnum.user_index.name())).id(userRequestRecord.id()).doc(indexRequest)),
+                User.class);
+
+        auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID())
+                .ownerObjectId(existingUser.get().getId()).objectClass(User.class).oldObject(null)
+                .newObject(objectMapper.writeValueAsString(existingUser.get()))
+                .action(GeneralAudit.Audit.ADD.toString()).comments("New User is getting subscribed from UI")
+                .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest)).build());
+        return "User updated successfully";
     }
 
     @Override
-    public void deleteUser(String id) {
-
+    public void deleteUser(String id, HttpServletRequest servletRequest) throws IOException {
+        client.delete(DeleteRequest.of(deleteRequest -> deleteRequest.id(id)));
     }
 
     @Override

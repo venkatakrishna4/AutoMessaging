@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -57,12 +58,13 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.cors(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers("/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/user/public").permitAll().anyRequest()
-                        .authenticated())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user/public").permitAll().requestMatchers("/api/**")
+                        .hasRole("ADMIN").anyRequest().authenticated())
                 .authenticationManager(
                         new ProviderManager(inMemoryAuthenticationProvider(), userDetailsAuthenticationProvider()))
-                .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).build();
+                .httpBasic(Customizer.withDefaults()).formLogin(Customizer.withDefaults())
+                .logout(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)).build();
     }
 
     /**
