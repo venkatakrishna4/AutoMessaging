@@ -120,6 +120,48 @@
           }
         }
       },
+      "whatsAppMessaging": {
+        "properties": {
+          "id": {
+            "type": "keyword",
+            "store": true,
+            "index": true
+          },
+          "from": {
+            "type": "text",
+            "store": true,
+            "index": true,
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "to": {
+            "type": "text",
+            "store": true,
+            "index": true,
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "messages": {
+            "type": "text",
+            "store": true,
+            "index": true,
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
       "createdBy": {
         "type": "text",
         "store": true,

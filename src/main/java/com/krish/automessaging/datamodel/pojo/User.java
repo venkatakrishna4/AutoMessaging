@@ -8,8 +8,9 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = true)
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
+@RequiredArgsConstructor
 @AllArgsConstructor
 @Builder
 @ToString(callSuper = true)
@@ -25,4 +26,5 @@ public class User extends PersistenceAudit<User> {
     private String phone;
     private long loggedInTime = System.currentTimeMillis();
     private boolean ttlEnabled = true;
+    private WhatsAppMessaging whatsAppMessaging = new WhatsAppMessaging();
 }

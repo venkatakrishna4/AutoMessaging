@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.pojo.audit.GeneralAudit;
@@ -12,6 +13,7 @@ import com.krish.automessaging.datamodel.record.UserRequestRecord;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
 import com.krish.automessaging.enums.IndexEnum;
 import com.krish.automessaging.exception.custom.EmailExistsException;
+import com.krish.automessaging.exception.custom.RecordNotFoundException;
 import com.krish.automessaging.service.UserService;
 import com.krish.automessaging.utils.AuditUtils;
 import com.krish.automessaging.utils.AuthUtils;
@@ -120,29 +122,54 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email Address cannot be updated");
         }
         Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(userRequestRecord.id());
+        User oldUser = existingUser.map(user -> {
+            try {
+                return objectMapper.readValue(objectMapper.writeValueAsString(existingUser.get()), User.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }).orElseThrow(() -> new RecordNotFoundException("User Record not found for ID " + userRequestRecord.id()));
+
         existingUser.map(user -> {
             user.setName(getTrimmedValue(userRequestRecord.name()));
             user.setPassword(userRequestRecord.password());
             user.setPhone(userRequestRecord.phone());
-            return user;
-        }).orElseThrow(() -> new NoSuchElementException("User not found for id " + userRequestRecord.id()));
-        IndexRequest<User> indexRequest = IndexRequest.of(request -> request
-                .index(utils.getFinalIndex(IndexEnum.user_index.name())).document(existingUser.get()));
-        client.update(UpdateRequest.of(updateRequest -> updateRequest
-                .index(utils.getFinalIndex(IndexEnum.user_index.name())).id(userRequestRecord.id()).doc(indexRequest)),
-                User.class);
 
-        auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID())
-                .ownerObjectId(existingUser.get().getId()).objectClass(User.class).oldObject(null)
-                .newObject(objectMapper.writeValueAsString(existingUser.get()))
-                .action(GeneralAudit.Audit.ADD.toString()).comments("New User is getting subscribed from UI")
-                .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest)).build());
+            IndexRequest<User> indexRequest = IndexRequest
+                    .of(request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(user));
+            try {
+                client.update(UpdateRequest
+                        .of(updateRequest -> updateRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                                .doc(indexRequest).id(userRequestRecord.id()).upsert(user)),
+                        User.class);
+                auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(user.getId())
+                        .objectClass(User.class).oldObject(objectMapper.writeValueAsString(oldUser))
+                        .newObject(objectMapper.writeValueAsString(user)).action(GeneralAudit.Audit.UPDATE.toString())
+                        .comments("Updating exising user from UI").loggedInUserId(authUtils.getLoggedInUserId())
+                        .clientIP(authUtils.getClientIP(servletRequest)).build());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return user;
+        });
         return "User updated successfully";
     }
 
     @Override
     public void deleteUser(String id, HttpServletRequest servletRequest) throws IOException {
-        client.delete(DeleteRequest.of(deleteRequest -> deleteRequest.id(id)));
+        userUtils.getUserByUsernameOrEmailOrID(id).ifPresentOrElse(user -> {
+            try {
+                client.delete(
+                        deleteRequest -> deleteRequest.index(utils.getFinalIndex(IndexEnum.user_index.name())).id(id));
+                auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(user.getId())
+                        .objectClass(User.class).oldObject(objectMapper.writeValueAsString(user)).newObject(null)
+                        .action(GeneralAudit.Audit.DELETE.toString()).comments("Deleting exising user from UI")
+                        .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest))
+                        .build());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }, () -> log.error("Cannot delete user as user does not exists for ID" + id));
     }
 
     @Override

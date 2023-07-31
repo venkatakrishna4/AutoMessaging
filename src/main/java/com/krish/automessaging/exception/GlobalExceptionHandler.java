@@ -3,6 +3,7 @@ package com.krish.automessaging.exception;
 import com.krish.automessaging.datamodel.pojo.exception.ApiError;
 import com.krish.automessaging.datamodel.pojo.exception.ApiSubErrors;
 import com.krish.automessaging.exception.custom.EmailExistsException;
+import com.krish.automessaging.exception.custom.RecordNotFoundException;
 import org.springframework.http.*;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -56,6 +57,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = ApiError.builder().message("Please check the sub errors").status(status)
                 .timestamp(TIME_STAMP).subErrors(subErrors).build();
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(apiError);
+    }
+
+    @ExceptionHandler(RecordNotFoundException.class)
+    public ResponseEntity<Object> handleRecordNotFoundException(RecordNotFoundException ex) {
+        ApiError apiError = ApiError.builder().status(HttpStatus.NOT_FOUND).subErrors(null).message(ex.getMessage())
+                .timestamp(TIME_STAMP).build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
     }
 
     @ExceptionHandler(IOException.class)

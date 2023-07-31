@@ -12,7 +12,9 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.krish.automessaging.datamodel.pojo.User;
+import com.krish.automessaging.datamodel.pojo.WhatsAppMessaging;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
+import com.krish.automessaging.datamodel.record.WhatsAppMessagingRecord;
 import com.krish.automessaging.enums.IndexEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -79,9 +81,37 @@ public class UserUtils {
         return false;
     }
 
+    public Optional<WhatsAppMessaging> getWhatsAppMessagingById(String id) throws IOException {
+        SearchResponse<User> searchResponse = client.search(
+                SearchRequest.of(searchRequest -> searchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                        .query(QueryBuilders.term().field("whatsAppMessaging.id").value(id).build()._toQuery())),
+                User.class);
+        List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
+        return Optional.ofNullable(users.get(0).getWhatsAppMessaging());
+    }
+
+    public Optional<User> getUserByWhatsAppMessagingId(String id) throws IOException {
+        SearchResponse<User> searchResponse = client.search(
+                SearchRequest.of(SearchRequest -> SearchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                        .query(QueryBuilders.term().field("whatsAppMessaging.id").value(id).build()._toQuery())),
+                User.class);
+        List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
+        return Optional.ofNullable(users.get(0));
+    }
+
     public UserResponseRecord mapToUserResponseRecord(User user) {
         try {
             return objectMapper.readValue(objectMapper.writeValueAsString(user), UserResponseRecord.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public WhatsAppMessagingRecord mapToUserWhatsAppMessagingRecord(WhatsAppMessaging whatsAppMessaging) {
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsString(whatsAppMessaging),
+                    WhatsAppMessagingRecord.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
         }
