@@ -1,9 +1,10 @@
 package com.krish.automessaging.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 @Configuration
 public class RootBeansConfiguration {

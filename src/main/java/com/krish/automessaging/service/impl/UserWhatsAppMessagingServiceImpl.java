@@ -1,12 +1,12 @@
 package com.krish.automessaging.service.impl;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import co.elastic.clients.elasticsearch.core.DeleteRequest;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.UpdateRequest;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Optional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.pojo.WhatsAppMessaging;
@@ -19,14 +19,12 @@ import com.krish.automessaging.utils.AuditUtils;
 import com.krish.automessaging.utils.AuthUtils;
 import com.krish.automessaging.utils.UserUtils;
 import com.krish.automessaging.utils.Utils;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.UpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -54,8 +52,22 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
     public String saveWhatsAppMessaging(WhatsAppMessagingRecord whatsAppMessagingRecord,
             HttpServletRequest servletRequest) throws IOException {
         log.debug("Received request for saveWhatsAppMessaging\n{}", whatsAppMessagingRecord);
+        /*
+         * Get the existing user by using userId
+         */
         Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(whatsAppMessagingRecord.userId());
-        existingUser.map(u -> {
+        
+        /*
+         * If the existing user not found, then throw RecordNotFoundException
+         */
+        if(existingUser.isEmpty()) {
+        	throw new RecordNotFoundException("No Record found for the ID " + whatsAppMessagingRecord.userId());
+        }
+        
+        /*
+         * If the user exists, then update the user with required WhatsApp Messaging information
+         */
+        Optional<User> user = existingUser.map(u -> {
             if (Objects.isNull(u.getWhatsAppMessaging().getId())) {
                 u.getWhatsAppMessaging().setId(Utils.generateUUID());
             }
@@ -78,37 +90,46 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                         .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest))
                         .build());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+            	log.error(e.getMessage(), e);
             }
             return u;
-        }).orElseThrow(
-                () -> new RecordNotFoundException("User Record not found for ID " + whatsAppMessagingRecord.userId()));
-        return "WhatsApp Messaging is saved for User " + existingUser.get().getName();
+        });
+        return "WhatsApp Messaging is saved for User " + user.get().getName();
     }
 
     @Override
-    public WhatsAppMessagingRecord getWhatsAppMessaging(String id) throws IOException {
-        Optional<WhatsAppMessaging> existingWhatsAppMessaging = userUtils.getWhatsAppMessagingById(id);
+    public WhatsAppMessagingRecord getWhatsAppMessaging(String userId, String id) throws IOException {
+        Optional<WhatsAppMessaging> existingWhatsAppMessaging = userUtils.getWhatsAppMessagingById(userId, id);
         return existingWhatsAppMessaging.map(userUtils::mapToUserWhatsAppMessagingRecord)
                 .orElseThrow(() -> new RecordNotFoundException("WhatsApp Messaging Record not found for ID " + id));
     }
 
     @Override
-    public void deleteWhatsAppMessaging(String id, HttpServletRequest servletRequest) throws IOException {
-        Optional<WhatsAppMessaging> existingWhatsAppMessaging = userUtils.getWhatsAppMessagingById(id);
-        existingWhatsAppMessaging.ifPresentOrElse(whatsAppMessaging -> {
+    public void deleteWhatsAppMessaging(String userId, String id, HttpServletRequest servletRequest) throws IOException {
+        Optional<WhatsAppMessaging> existingWhatsAppMessaging = userUtils.getWhatsAppMessagingById(userId, id);
+        if(existingWhatsAppMessaging.isEmpty()) {
+        	throw new RecordNotFoundException("No Record found for ID " + id + " for User ID " + userId);
+        }
+        existingWhatsAppMessaging.ifPresent(whatsAppMessaging -> {
             try {
                 Optional<User> existingUser = userUtils.getUserByWhatsAppMessagingId(id);
-                existingUser.map(user -> {
+                if(existingUser.isEmpty()) {
+                	throw new RecordNotFoundException("No Record found for ID " + id);
+                }
+                Optional<User> user = existingUser.map(u -> {
                     try {
                         User oldUser = objectMapper.readValue(objectMapper.writeValueAsString(existingUser.get()),
                                 User.class);
-                        user.setWhatsAppMessaging(new WhatsAppMessaging());
+                        /*
+                         * Resetting WhatsApp Messaging to empty
+                         */
+                        u.setWhatsAppMessaging(WhatsAppMessaging.builder().build());
                         IndexRequest<User> indexRequest = IndexRequest.of(request -> request
-                                .index(utils.getFinalIndex(IndexEnum.user_index.name())).document(user));
+                                .index(utils.getFinalIndex(IndexEnum.user_index.name())).document(u));
                         client.update(
                                 UpdateRequest.of(updateRequest -> updateRequest.doc(indexRequest)
-                                        .index(utils.getFinalIndex(IndexEnum.user_index.name())).upsert(user)),
+                                		.id(u.getId())
+                                		.index(utils.getFinalIndex(IndexEnum.user_index.name())).upsert(u)),
                                 User.class);
                         auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID())
                                 .ownerObjectId(existingWhatsAppMessaging.get().getId())
@@ -123,11 +144,14 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                         log.error(e.getMessage(), e);
                     }
 
-                    return user;
-                }).orElseThrow(() -> new RecordNotFoundException("No Record Found for ID " + id));
+                    return u;
+                });
+                log.debug("Deleted WhatsApp Messaging for User\n{}", user.get());
+            }catch (RecordNotFoundException e) {
+				throw new RecordNotFoundException(e.getMessage());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
-        }, () -> log.error("Cannot delete Record for ID {}", id));
+        });
     }
 }

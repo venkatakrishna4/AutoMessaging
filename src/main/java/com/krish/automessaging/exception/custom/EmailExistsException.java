@@ -6,7 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EmailExistsException extends RuntimeException {
-    private final String message;
+    private static final long serialVersionUID = 1L;
+	private final String message;
 
     public EmailExistsException(String message) {
         this.message = message;

@@ -1,15 +1,17 @@
 package com.krish.automessaging.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.krish.automessaging.service.JsonParserService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.krish.automessaging.service.JsonParserService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j

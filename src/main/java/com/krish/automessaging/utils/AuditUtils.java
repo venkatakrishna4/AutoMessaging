@@ -1,14 +1,16 @@
 package com.krish.automessaging.utils;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.krish.automessaging.datamodel.pojo.audit.GeneralAudit;
-import com.krish.automessaging.enums.IndexEnum;
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.krish.automessaging.datamodel.pojo.audit.GeneralAudit;
+import com.krish.automessaging.enums.IndexEnum;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 
 @Component
 public class AuditUtils {

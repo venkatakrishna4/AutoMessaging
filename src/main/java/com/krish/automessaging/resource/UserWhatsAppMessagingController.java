@@ -1,18 +1,26 @@
 package com.krish.automessaging.resource;
 
-import com.krish.automessaging.datamodel.record.WhatsAppMessagingRecord;
-import com.krish.automessaging.service.UserWhatsAppMessagingService;
-import com.krish.automessaging.utils.Utils;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
+import com.krish.automessaging.datamodel.record.WhatsAppMessagingRecord;
+import com.krish.automessaging.service.UserWhatsAppMessagingService;
+import com.krish.automessaging.utils.Utils;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/api/v1/user/whatsapp")
@@ -36,19 +44,19 @@ public class UserWhatsAppMessagingController {
                 HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{user-id}/{id}")
     @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_WHATSAPP_GET', 'ROLE_ADMIN'})")
     public ResponseEntity<WhatsAppMessagingRecord> getWhatsAppMessaging(
-            @NotBlank(message = "Valid ID is required") @PathVariable String id) throws IOException {
-        return ResponseEntity.ok(userWhatsAppMessagingService.getWhatsAppMessaging(id));
+            @NotBlank(message = "Valid User ID is required") @PathVariable("user-id") String userId, @NotBlank(message = "Valid ID is required") @PathVariable("id") String id) throws IOException {
+        return ResponseEntity.ok(userWhatsAppMessagingService.getWhatsAppMessaging(userId, id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{user-id}/{id}")
     @PreAuthorize("hasAnyAuthority('PRIVILEGE_USER_WHATSAPP_DELETE', 'ROLE_ADMIN')")
     public ResponseEntity<Object> deleteWhatsAppMessaging(
-            @NotBlank(message = "Valid ID is required") @PathVariable String id, HttpServletRequest servletRequest)
+            @NotBlank(message = "Valid User ID is required") @PathVariable("user-id") String userId, @NotBlank(message = "Valid ID is required") @PathVariable("id") String id, HttpServletRequest servletRequest)
             throws IOException {
-        userWhatsAppMessagingService.deleteWhatsAppMessaging(id, servletRequest);
+        userWhatsAppMessagingService.deleteWhatsAppMessaging(userId, id, servletRequest);
         return ResponseEntity.noContent().build();
     }
 

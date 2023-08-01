@@ -1,9 +1,10 @@
 package com.krish.automessaging.datamodel.record;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import lombok.Builder;
 
 /**
  * The type User response record.

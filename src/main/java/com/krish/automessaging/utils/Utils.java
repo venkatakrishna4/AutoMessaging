@@ -1,11 +1,12 @@
 package com.krish.automessaging.utils;
 
-import com.krish.automessaging.datamodel.pojo.es.BaseElasticObject;
+import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import com.krish.automessaging.datamodel.pojo.es.BaseElasticObject;
 
 /**
  * The type Utils.

@@ -1,10 +1,15 @@
 package com.krish.automessaging.exception;
 
-import com.krish.automessaging.datamodel.pojo.exception.ApiError;
-import com.krish.automessaging.datamodel.pojo.exception.ApiSubErrors;
-import com.krish.automessaging.exception.custom.EmailExistsException;
-import com.krish.automessaging.exception.custom.RecordNotFoundException;
-import org.springframework.http.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -14,10 +19,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.krish.automessaging.datamodel.pojo.exception.ApiError;
+import com.krish.automessaging.datamodel.pojo.exception.ApiSubErrors;
+import com.krish.automessaging.exception.custom.EmailExistsException;
+import com.krish.automessaging.exception.custom.RecordNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {

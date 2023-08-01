@@ -1,11 +1,14 @@
 package com.krish.automessaging.utils;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.SearchType;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -16,15 +19,14 @@ import com.krish.automessaging.datamodel.pojo.WhatsAppMessaging;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
 import com.krish.automessaging.datamodel.record.WhatsAppMessagingRecord;
 import com.krish.automessaging.enums.IndexEnum;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.SearchType;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -81,13 +83,19 @@ public class UserUtils {
         return false;
     }
 
-    public Optional<WhatsAppMessaging> getWhatsAppMessagingById(String id) throws IOException {
+    public Optional<WhatsAppMessaging> getWhatsAppMessagingById(String userId, String whatsAppId) throws IOException {
         SearchResponse<User> searchResponse = client.search(
                 SearchRequest.of(searchRequest -> searchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
-                        .query(QueryBuilders.term().field("whatsAppMessaging.id").value(id).build()._toQuery())),
+                        .query(QueryBuilders.bool()
+                        		.must(QueryBuilders.term().field("id").value(userId).build()._toQuery())
+                        		.must(QueryBuilders.term().field("whatsAppMessaging.id").value(whatsAppId).build()._toQuery())
+                        		.build()._toQuery())),
                 User.class);
         List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
-        return Optional.ofNullable(users.get(0).getWhatsAppMessaging());
+        if(ObjectUtils.isNotEmpty(users)) {
+        	return Optional.ofNullable(users.get(0).getWhatsAppMessaging()); 
+        }
+        return Optional.empty();
     }
 
     public Optional<User> getUserByWhatsAppMessagingId(String id) throws IOException {
@@ -96,7 +104,10 @@ public class UserUtils {
                         .query(QueryBuilders.term().field("whatsAppMessaging.id").value(id).build()._toQuery())),
                 User.class);
         List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
+        if(ObjectUtils.isNotEmpty(users)) {
         return Optional.ofNullable(users.get(0));
+        }
+        return Optional.empty();
     }
 
     public UserResponseRecord mapToUserResponseRecord(User user) {

@@ -1,10 +1,18 @@
 package com.krish.automessaging.datamodel.pojo.audit;
 
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.krish.automessaging.configuration.constant.TimeConstants;
 import com.krish.automessaging.datamodel.pojo.es.PersistenceAudit;
-import lombok.*;
-import org.springframework.stereotype.Component;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @Builder

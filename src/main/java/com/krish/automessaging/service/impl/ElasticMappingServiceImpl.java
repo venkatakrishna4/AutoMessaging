@@ -1,9 +1,19 @@
 package com.krish.automessaging.service.impl;
 
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import com.krish.automessaging.service.AdminElasticService;
-import com.krish.automessaging.service.ElasticMappingService;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -11,13 +21,11 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
+import com.krish.automessaging.service.AdminElasticService;
+import com.krish.automessaging.service.ElasticMappingService;
+
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j

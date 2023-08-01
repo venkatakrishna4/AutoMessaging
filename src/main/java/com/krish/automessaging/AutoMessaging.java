@@ -1,16 +1,18 @@
 package com.krish.automessaging;
 
-import com.krish.automessaging.service.ElasticMappingService;
-import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
-import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import com.krish.automessaging.service.ElasticMappingService;
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
+
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
 @SpringBootApplication
 @EnableWebMvc

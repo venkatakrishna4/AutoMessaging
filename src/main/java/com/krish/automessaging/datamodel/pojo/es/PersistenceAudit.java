@@ -1,8 +1,8 @@
 package com.krish.automessaging.datamodel.pojo.es;
 
-import com.krish.automessaging.utils.Utils;
-
 import java.util.Objects;
+
+import com.krish.automessaging.utils.Utils;
 
 /**
  * The type Persistence audit.
