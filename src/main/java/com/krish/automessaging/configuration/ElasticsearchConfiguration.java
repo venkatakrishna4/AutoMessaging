@@ -17,6 +17,8 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 
 /**
+ * The Class ElasticsearchConfiguration.
+ *
  * @author venkat
  *
  * @version Version 1
@@ -27,17 +29,20 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 @Configuration
 public class ElasticsearchConfiguration {
 
+    /** The elasticsearch host. */
     @Value("${elastic.host}")
     private String elasticsearchHost;
 
+    /** The elastic username. */
     @Value("${elastic.username}")
     private String elasticUsername;
 
+    /** The elastic password. */
     @Value("${elastic.password}")
     private String elasticPassword;
 
     /**
-     * Method getRestClient() creates {@link RestClient} using {@link BasicCredentialsProvider}
+     * Method getRestClient() creates {@link RestClient} using {@link BasicCredentialsProvider}.
      *
      * @return {@link RestClient}
      */
@@ -54,7 +59,7 @@ public class ElasticsearchConfiguration {
 
     /**
      * Method getTransport() returns {@link ElasticsearchTransport} that will be used to create
-     * {@link ElasticsearchClient}
+     * {@link ElasticsearchClient}.
      *
      * @return {@link ElasticsearchClient}
      */
@@ -63,13 +68,18 @@ public class ElasticsearchConfiguration {
         return new RestClientTransport(getRestClient(), jacksonJsonpMapper());
     }
 
+    /**
+     * Jackson jsonp mapper.
+     *
+     * @return the jackson jsonp mapper
+     */
     @Bean
     public JacksonJsonpMapper jacksonJsonpMapper() {
         return new JacksonJsonpMapper();
     }
 
     /**
-     * Method elasticsearchClient() returns {@link ElasticsearchClient} that is used for DB interactions
+     * Method elasticsearchClient() returns {@link ElasticsearchClient} that is used for DB interactions.
      *
      * @return {@link ElasticsearchClient}
      */

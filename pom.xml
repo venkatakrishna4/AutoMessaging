@@ -26,6 +26,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
+<dependency>
+    <groupId>javax.cache</groupId>
+    <artifactId>cache-api</artifactId>
+</dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -35,10 +40,26 @@
       <artifactId>spring-session-core</artifactId>
     </dependency>
     <dependency>
+		<groupId>com.github.vladimir-bukhtoyarov</groupId>
+		<artifactId>bucket4j-core</artifactId>
+		<version>7.6.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/com.github.vladimir-bukhtoyarov/bucket4j-jcache -->
+<dependency>
+    <groupId>com.github.vladimir-bukhtoyarov</groupId>
+    <artifactId>bucket4j-jcache</artifactId>
+    <version>7.6.0</version>
+</dependency>
+
+    <dependency>
       <groupId>com.github.ulisesbocchio</groupId>
       <artifactId>jasypt-spring-boot-starter</artifactId>
       <version>3.0.5</version>
     </dependency>
+    <dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-thymeleaf</artifactId>
+	</dependency>
     <dependency>
       <groupId>com.googlecode.libphonenumber</groupId>
       <artifactId>libphonenumber</artifactId>
@@ -92,6 +113,11 @@
       <artifactId>elasticsearch-java</artifactId>
       <version>${elastic.version}</version>
     </dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+
   </dependencies>
 
   <build>

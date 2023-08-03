@@ -36,17 +36,54 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class UserServiceImpl.
+ */
 @Service
+
+/** The Constant log. */
 @Slf4j
 public class UserServiceImpl implements UserService {
+
+    /** The client. */
     private final ElasticsearchClient client;
+
+    /** The password encoder. */
     private final PasswordEncoder passwordEncoder;
+
+    /** The user utils. */
     private final UserUtils userUtils;
+
+    /** The utils. */
     private final Utils utils;
+
+    /** The audit utils. */
     private final AuditUtils auditUtils;
+
+    /** The auth utils. */
     private final AuthUtils authUtils;
+
+    /** The object mapper. */
     private final ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new user service impl.
+     *
+     * @param client
+     *            the client
+     * @param passwordEncoder
+     *            the password encoder
+     * @param userUtils
+     *            the user utils
+     * @param utils
+     *            the utils
+     * @param auditUtils
+     *            the audit utils
+     * @param authUtils
+     *            the auth utils
+     * @param objectMapper
+     *            the object mapper
+     */
     @Autowired
     public UserServiceImpl(final ElasticsearchClient client, final PasswordEncoder passwordEncoder, UserUtils userUtils,
             Utils utils, AuditUtils auditUtils, AuthUtils authUtils, ObjectMapper objectMapper) {
@@ -59,6 +96,19 @@ public class UserServiceImpl implements UserService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Creates the user.
+     *
+     * @param userRequestRecord
+     *            the user request record
+     * @param servletRequest
+     *            the servlet request
+     *
+     * @return the string
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public String createUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest)
             throws IOException {
@@ -95,12 +145,31 @@ public class UserServiceImpl implements UserService {
         return "User created successfully";
     }
 
+    /**
+     * Gets the user.
+     *
+     * @param id
+     *            the id
+     *
+     * @return the user
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public UserResponseRecord getUser(String id) throws IOException {
         return userUtils.getUserByUsernameOrEmailOrID(id).map(userUtils::mapToUserResponseRecord)
                 .orElseThrow(() -> new NoSuchElementException("User not found for id " + id));
     }
 
+    /**
+     * Gets the all users.
+     *
+     * @return the all users
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public PaginatedResponseRecord<List<UserResponseRecord>> getAllUsers() throws IOException {
         // TODO: 30/07/23 Implement Pagination
@@ -112,6 +181,19 @@ public class UserServiceImpl implements UserService {
                 .map(userUtils::mapToUserResponseRecord).toList());
     }
 
+    /**
+     * Update user.
+     *
+     * @param userRequestRecord
+     *            the user request record
+     * @param servletRequest
+     *            the servlet request
+     *
+     * @return the string
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public String updateUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest)
             throws IOException {
@@ -160,6 +242,17 @@ public class UserServiceImpl implements UserService {
         return "User updated successfully";
     }
 
+    /**
+     * Delete user.
+     *
+     * @param id
+     *            the id
+     * @param servletRequest
+     *            the servlet request
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void deleteUser(String id, HttpServletRequest servletRequest) throws IOException {
         userUtils.getUserByUsernameOrEmailOrID(id).ifPresentOrElse(user -> {
@@ -177,6 +270,14 @@ public class UserServiceImpl implements UserService {
         }, () -> log.error("Cannot delete user as user does not exists for ID" + id));
     }
 
+    /**
+     * Gets the trimmed value.
+     *
+     * @param value
+     *            the value
+     *
+     * @return the trimmed value
+     */
     @Override
     public String getTrimmedValue(String value) {
         if (StringUtils.isNotBlank(value)) {

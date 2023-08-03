@@ -7,6 +7,9 @@ import com.krish.automessaging.datamodel.pojo.WhatsAppMessaging;
 
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * The WhatsAppMessagingRecord.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record WhatsAppMessagingRecord(
         @NotBlank(message = "User ID is required to save WhatsApp Messaging") String userId, String id, String from,

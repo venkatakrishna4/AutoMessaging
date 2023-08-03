@@ -22,13 +22,34 @@ import com.krish.automessaging.utils.UserUtils;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class UserAuthenticationServiceImpl.
+ */
 @Service
+
+/** The Constant log. */
 @Slf4j
 public class UserAuthenticationServiceImpl implements UserDetailsService {
+
+    /** The client. */
     private final ElasticsearchClient client;
+
+    /** The user utils. */
     private final UserUtils userUtils;
+
+    /** The json parser service. */
     private final JsonParserService jsonParserService;
 
+    /**
+     * Instantiates a new user authentication service impl.
+     *
+     * @param client
+     *            the client
+     * @param userUtils
+     *            the user utils
+     * @param jsonParserService
+     *            the json parser service
+     */
     @Autowired
     public UserAuthenticationServiceImpl(final ElasticsearchClient client, final UserUtils userUtils,
             JsonParserService jsonParserService) {
@@ -37,6 +58,17 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
         this.jsonParserService = jsonParserService;
     }
 
+    /**
+     * Load user by username.
+     *
+     * @param username
+     *            the username
+     *
+     * @return the user details
+     *
+     * @throws UsernameNotFoundException
+     *             the username not found exception
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (StringUtils.isBlank(username)) {
@@ -54,6 +86,14 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
         throw new UsernameNotFoundException("User not found " + username);
     }
 
+    /**
+     * Creates the spring user.
+     *
+     * @param user
+     *            the user
+     *
+     * @return the org.springframework.security.core.userdetails. user
+     */
     private org.springframework.security.core.userdetails.User createSpringUser(User user) {
         List<String> privileges = new ArrayList<>();
         try {

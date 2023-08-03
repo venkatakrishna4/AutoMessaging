@@ -26,16 +26,49 @@ import co.elastic.clients.elasticsearch.core.UpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class UserWhatsAppMessagingServiceImpl.
+ */
 @Service
+
+/** The Constant log. */
 @Slf4j
 public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingService {
+
+    /** The client. */
     private final ElasticsearchClient client;
+
+    /** The user utils. */
     private final UserUtils userUtils;
+
+    /** The utils. */
     private final Utils utils;
+
+    /** The audit utils. */
     private final AuditUtils auditUtils;
+
+    /** The object mapper. */
     private final ObjectMapper objectMapper;
+
+    /** The auth utils. */
     private final AuthUtils authUtils;
 
+    /**
+     * Instantiates a new user whats app messaging service impl.
+     *
+     * @param client
+     *            the client
+     * @param userUtils
+     *            the user utils
+     * @param utils
+     *            the utils
+     * @param auditUtils
+     *            the audit utils
+     * @param objectMapper
+     *            the object mapper
+     * @param authUtils
+     *            the auth utils
+     */
     @Autowired
     public UserWhatsAppMessagingServiceImpl(final ElasticsearchClient client, final UserUtils userUtils,
             final Utils utils, final AuditUtils auditUtils, final ObjectMapper objectMapper,
@@ -48,6 +81,19 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
         this.authUtils = authUtils;
     }
 
+    /**
+     * Save whats app messaging.
+     *
+     * @param whatsAppMessagingRecord
+     *            the whats app messaging record
+     * @param servletRequest
+     *            the servlet request
+     *
+     * @return the string
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public String saveWhatsAppMessaging(WhatsAppMessagingRecord whatsAppMessagingRecord,
             HttpServletRequest servletRequest) throws IOException {
@@ -56,14 +102,14 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
          * Get the existing user by using userId
          */
         Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(whatsAppMessagingRecord.userId());
-        
+
         /*
          * If the existing user not found, then throw RecordNotFoundException
          */
-        if(existingUser.isEmpty()) {
-        	throw new RecordNotFoundException("No Record found for the ID " + whatsAppMessagingRecord.userId());
+        if (existingUser.isEmpty()) {
+            throw new RecordNotFoundException("No Record found for the ID " + whatsAppMessagingRecord.userId());
         }
-        
+
         /*
          * If the user exists, then update the user with required WhatsApp Messaging information
          */
@@ -90,13 +136,26 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                         .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest))
                         .build());
             } catch (IOException e) {
-            	log.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
             return u;
         });
         return "WhatsApp Messaging is saved for User " + user.get().getName();
     }
 
+    /**
+     * Gets the whats app messaging.
+     *
+     * @param userId
+     *            the user id
+     * @param id
+     *            the id
+     *
+     * @return the whats app messaging
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public WhatsAppMessagingRecord getWhatsAppMessaging(String userId, String id) throws IOException {
         Optional<WhatsAppMessaging> existingWhatsAppMessaging = userUtils.getWhatsAppMessagingById(userId, id);
@@ -104,17 +163,31 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                 .orElseThrow(() -> new RecordNotFoundException("WhatsApp Messaging Record not found for ID " + id));
     }
 
+    /**
+     * Delete whats app messaging.
+     *
+     * @param userId
+     *            the user id
+     * @param id
+     *            the id
+     * @param servletRequest
+     *            the servlet request
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
-    public void deleteWhatsAppMessaging(String userId, String id, HttpServletRequest servletRequest) throws IOException {
+    public void deleteWhatsAppMessaging(String userId, String id, HttpServletRequest servletRequest)
+            throws IOException {
         Optional<WhatsAppMessaging> existingWhatsAppMessaging = userUtils.getWhatsAppMessagingById(userId, id);
-        if(existingWhatsAppMessaging.isEmpty()) {
-        	throw new RecordNotFoundException("No Record found for ID " + id + " for User ID " + userId);
+        if (existingWhatsAppMessaging.isEmpty()) {
+            throw new RecordNotFoundException("No Record found for ID " + id + " for User ID " + userId);
         }
         existingWhatsAppMessaging.ifPresent(whatsAppMessaging -> {
             try {
                 Optional<User> existingUser = userUtils.getUserByWhatsAppMessagingId(id);
-                if(existingUser.isEmpty()) {
-                	throw new RecordNotFoundException("No Record found for ID " + id);
+                if (existingUser.isEmpty()) {
+                    throw new RecordNotFoundException("No Record found for ID " + id);
                 }
                 Optional<User> user = existingUser.map(u -> {
                     try {
@@ -124,12 +197,11 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                          * Resetting WhatsApp Messaging to empty
                          */
                         u.setWhatsAppMessaging(WhatsAppMessaging.builder().build());
-                        IndexRequest<User> indexRequest = IndexRequest.of(request -> request
-                                .index(utils.getFinalIndex(IndexEnum.user_index.name())).document(u));
+                        IndexRequest<User> indexRequest = IndexRequest.of(
+                                request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(u));
                         client.update(
-                                UpdateRequest.of(updateRequest -> updateRequest.doc(indexRequest)
-                                		.id(u.getId())
-                                		.index(utils.getFinalIndex(IndexEnum.user_index.name())).upsert(u)),
+                                UpdateRequest.of(updateRequest -> updateRequest.doc(indexRequest).id(u.getId())
+                                        .index(utils.getFinalIndex(IndexEnum.user_index.name())).upsert(u)),
                                 User.class);
                         auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID())
                                 .ownerObjectId(existingWhatsAppMessaging.get().getId())
@@ -147,8 +219,8 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                     return u;
                 });
                 log.debug("Deleted WhatsApp Messaging for User\n{}", user.get());
-            }catch (RecordNotFoundException e) {
-				throw new RecordNotFoundException(e.getMessage());
+            } catch (RecordNotFoundException e) {
+                throw new RecordNotFoundException(e.getMessage());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }

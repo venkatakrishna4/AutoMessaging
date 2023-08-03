@@ -27,22 +27,51 @@ import com.krish.automessaging.service.ElasticMappingService;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class ElasticMappingServiceImpl.
+ */
 @Service
+
+/** The Constant log. */
 @Slf4j
 public class ElasticMappingServiceImpl implements ElasticMappingService {
 
+    /** The admin elastic service. */
     private final AdminElasticService adminElasticService;
 
+    /** The index set. */
     private final Set<String> indexSet = new HashSet<>();
+
+    /** The index setting map. */
     private final Map<String, IndexFile> indexSettingMap = new HashMap<>();
+
+    /** The update setting map. */
     private final Map<String, List<IndexFile>> updateSettingMap = new HashMap<>();
+
+    /** The update mapping map. */
     private final Map<String, List<IndexFile>> updateMappingMap = new HashMap<>();
 
+    /**
+     * Instantiates a new elastic mapping service impl.
+     *
+     * @param adminElasticService
+     *            the admin elastic service
+     */
     @Autowired
     public ElasticMappingServiceImpl(final AdminElasticService adminElasticService) {
         this.adminElasticService = adminElasticService;
     }
 
+    /**
+     * Initialize indexes.
+     *
+     * @throws URISyntaxException
+     *             the URI syntax exception
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void initializeIndexes() throws URISyntaxException, ElasticsearchException, IOException {
         scanIndexConfigurations("es_doc/");
@@ -63,6 +92,19 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Scan index configurations.
+     *
+     * @param path
+     *            the path
+     *
+     * @throws URISyntaxException
+     *             the URI syntax exception
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void scanIndexConfigurations(String path) throws URISyntaxException, ElasticsearchException, IOException {
         URL url = this.getClass().getClassLoader().getResource(path);
@@ -75,6 +117,19 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Process file path indexes.
+     *
+     * @param url
+     *            the url
+     *
+     * @throws URISyntaxException
+     *             the URI syntax exception
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void processFilePathIndexes(URL url) throws URISyntaxException, ElasticsearchException, IOException {
         File rootESDir = new File(url.toURI());
@@ -121,6 +176,19 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Process jar path indexes.
+     *
+     * @param path
+     *            the path
+     *
+     * @throws URISyntaxException
+     *             the URI syntax exception
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void processJarPathIndexes(String path) throws URISyntaxException, ElasticsearchException, IOException {
         ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
@@ -163,6 +231,14 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Gets the index from URL.
+     *
+     * @param url
+     *            the url
+     *
+     * @return the index from URL
+     */
     @Override
     public String getIndexFromURL(URL url) {
         String str = url.toString();
@@ -176,6 +252,17 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         return null;
     }
 
+    /**
+     * Creates the index.
+     *
+     * @param index
+     *            the index
+     *
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void createIndex(String index) throws ElasticsearchException, IOException {
         try (InputStream json = getIndexSettings(index)) {
@@ -183,6 +270,17 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Update index settings.
+     *
+     * @param index
+     *            the index
+     *
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void updateIndexSettings(String index) throws ElasticsearchException, IOException {
         List<IndexFile> list = updateSettingMap.get(index);
@@ -194,6 +292,19 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Update index settings.
+     *
+     * @param index
+     *            the index
+     * @param name
+     *            the name
+     *
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void updateIndexSettings(String index, String name) throws ElasticsearchException, IOException {
         try (InputStream json = getJson(updateSettingMap, index, name)) {
@@ -201,6 +312,17 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Update index mappings.
+     *
+     * @param index
+     *            the index
+     *
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void updateIndexMappings(String index) throws ElasticsearchException, IOException {
         List<IndexFile> list = updateMappingMap.get(index);
@@ -212,6 +334,19 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Update index mappings.
+     *
+     * @param index
+     *            the index
+     * @param name
+     *            the name
+     *
+     * @throws ElasticsearchException
+     *             the elasticsearch exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public void updateIndexMappings(String index, String name) throws ElasticsearchException, IOException {
         try (InputStream json = getJson(updateMappingMap, index, name)) {
@@ -219,6 +354,14 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         }
     }
 
+    /**
+     * Gets the index settings.
+     *
+     * @param index
+     *            the index
+     *
+     * @return the index settings
+     */
     @Override
     public InputStream getIndexSettings(String index) {
         try {
@@ -235,6 +378,18 @@ public class ElasticMappingServiceImpl implements ElasticMappingService {
         return null;
     }
 
+    /**
+     * Gets the json.
+     *
+     * @param map
+     *            the map
+     * @param index
+     *            the index
+     * @param name
+     *            the name
+     *
+     * @return the json
+     */
     @Override
     public InputStream getJson(Map<String, List<IndexFile>> map, String index, String name) {
         List<IndexFile> list = map.get(index);

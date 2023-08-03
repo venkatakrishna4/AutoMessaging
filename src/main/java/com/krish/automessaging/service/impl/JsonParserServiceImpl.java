@@ -13,16 +13,39 @@ import com.krish.automessaging.service.JsonParserService;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class JsonParserServiceImpl.
+ */
 @Service
+
+/** The Constant log. */
 @Slf4j
 public class JsonParserServiceImpl implements JsonParserService {
+
+    /** The context loader. */
     private final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+
+    /** The object mapper. */
     private final ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new json parser service impl.
+     *
+     * @param objectMapper
+     *            the object mapper
+     */
     public JsonParserServiceImpl(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Parses the privileges json.
+     *
+     * @return the map
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     @Override
     public Map<String, List<String>> parsePrivilegesJson() throws IOException {
         InputStream inputStream = contextLoader.getResourceAsStream("json/Privileges.json");

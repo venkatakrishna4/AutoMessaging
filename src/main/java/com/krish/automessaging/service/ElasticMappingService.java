@@ -243,11 +243,27 @@ public interface ElasticMappingService {
             }
         }
 
+        /**
+         * Compare to.
+         *
+         * @param o
+         *            the o
+         *
+         * @return the int
+         */
         @Override
         public int compareTo(IndexFile o) {
             return Integer.compare(seq, o.seq);
         }
 
+        /**
+         * Equals.
+         *
+         * @param o
+         *            the o
+         *
+         * @return true, if successful
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o)
@@ -259,6 +275,11 @@ public interface ElasticMappingService {
                     && Objects.equals(filePath, indexFile.filePath) && Objects.equals(resource, indexFile.resource);
         }
 
+        /**
+         * Hash code.
+         *
+         * @return the int
+         */
         @Override
         public int hashCode() {
             return Objects.hash(fileName, filePath, resource, seq);

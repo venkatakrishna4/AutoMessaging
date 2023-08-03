@@ -33,13 +33,23 @@ import org.springframework.security.web.SecurityFilterChain;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SecurityConfiguration {
 
+    /** The username. */
     @Value("${login.username}")
     private String username;
+
+    /** The password. */
     @Value("${login.password}")
     private String password;
 
+    /** The user details service. */
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Instantiates a new security configuration.
+     *
+     * @param userDetailsService
+     *            the user details service
+     */
     @Autowired
     public SecurityConfiguration(final UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -82,6 +92,11 @@ public class SecurityConfiguration {
         return authenticationProvider;
     }
 
+    /**
+     * User details authentication provider.
+     *
+     * @return the dao authentication provider
+     */
     @Bean
     @Primary
     public DaoAuthenticationProvider userDetailsAuthenticationProvider() {

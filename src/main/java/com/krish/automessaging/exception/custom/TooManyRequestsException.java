@@ -9,22 +9,30 @@ import lombok.Setter;
  * @return the message
  */
 @Getter
+
+/**
+ * Sets the message.
+ *
+ * @param message
+ *            the new message
+ */
 @Setter
-public class RecordNotFoundException extends RuntimeException {
+public class TooManyRequestsException extends RuntimeException {
 
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
 
     /** The message. */
-    private final String message;
+    private String message;
 
     /**
-     * Instantiates a new record not found exception.
+     * Instantiates a new too many requests exception.
      *
      * @param message
      *            the message
      */
-    public RecordNotFoundException(final String message) {
+    public TooManyRequestsException(String message) {
         this.message = message;
     }
+
 }

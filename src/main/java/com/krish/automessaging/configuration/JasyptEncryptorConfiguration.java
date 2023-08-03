@@ -9,11 +9,12 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * {@link JasyptEncryptorConfiguration} has a bean jasyptStringEncryptor() that is used to create an encryptor to encode
- * and decode sensitive information
+ * and decode sensitive information.
  */
 @Configuration
 public class JasyptEncryptorConfiguration {
 
+    /** The jasypt encryptor password. */
     @Value("${jasypt.password}")
     private String jasyptEncryptorPassword;
 

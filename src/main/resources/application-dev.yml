@@ -29,3 +29,11 @@ elastic:
 login:
   username: ENC(RnHUlRzG/LzKvMsoMnYlUw==)
   password: $2a$12$k9zbyDmaWo8GumZ8UqSDD.N9bt8TYKL/U5HJJS/eOUQ6mPVSZqrQC
+  
+email:
+  username: ENC(IHtWPzyOTxiTu2ZyrOXFat5xdon6iMr2bJubkWv+e8evEJTDCjrcWg==)
+  password: ENC(WI1MDP06Lmtj6GZM3BKBF+LqiMOYm+XqDUJRa0e3GiU=)
+  host: smtp.gmail.com
+  port: 587
+  useTLS: true
+  from: Venkat

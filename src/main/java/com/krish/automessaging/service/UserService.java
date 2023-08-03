@@ -13,13 +13,19 @@ import jakarta.servlet.http.HttpServletRequest;
  * The interface User service.
  */
 public interface UserService extends BaseServiceProvider<String> {
+
     /**
      * Create user string.
      *
      * @param userRequestRecord
      *            the user servletRequest record
+     * @param servletRequest
+     *            the servlet request
      *
      * @return the string
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
      */
     String createUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest) throws IOException;
 
@@ -30,6 +36,9 @@ public interface UserService extends BaseServiceProvider<String> {
      *            the id
      *
      * @return the user
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
      */
     UserResponseRecord getUser(String id) throws IOException;
 
@@ -37,6 +46,9 @@ public interface UserService extends BaseServiceProvider<String> {
      * Gets all users.
      *
      * @return the all users
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
      */
     PaginatedResponseRecord<List<UserResponseRecord>> getAllUsers() throws IOException;
 
@@ -45,8 +57,13 @@ public interface UserService extends BaseServiceProvider<String> {
      *
      * @param userRequestRecord
      *            the user servletRequest record
+     * @param servletRequest
+     *            the servlet request
      *
      * @return the string
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
      */
     String updateUser(UserRequestRecord userRequestRecord, HttpServletRequest servletRequest) throws IOException;
 
@@ -55,6 +72,11 @@ public interface UserService extends BaseServiceProvider<String> {
      *
      * @param id
      *            the id
+     * @param servletRequest
+     *            the servlet request
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
      */
     void deleteUser(String id, HttpServletRequest servletRequest) throws IOException;
 }

@@ -40,8 +40,8 @@ public class PasswordEncryptionTest {
         simpleStringPBEConfig.setStringOutputType("base64");
         pooledPBEStringEncryptor.setConfig(simpleStringPBEConfig);
 
-        log.debug("Encrypted value: {}", pooledPBEStringEncryptor.encrypt(elasticUsername));
-        log.debug("Encrypted value: {}", pooledPBEStringEncryptor.encrypt(elasticPassword));
+        log.debug("Encrypted value: {}", pooledPBEStringEncryptor.encrypt("krishnaeducation34892@gmail.com"));
+        log.debug("Encrypted value: {}", pooledPBEStringEncryptor.encrypt("tsismlfjldvlmpnu"));
         Assertions.assertTrue(true);
     }
 }

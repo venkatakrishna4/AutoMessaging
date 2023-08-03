@@ -7,11 +7,24 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ChangeLog extends PersistenceAudit<ChangeLog> {
+
+    /** The id. */
     private String id;
+
+    /** The index name. */
     private String indexName;
+
+    /** The file name. */
     private String fileName;
+
+    /** The processed. */
     private boolean processed = false;
 
+    /**
+     * Gets the id.
+     *
+     * @return the id
+     */
     public String getId() {
         return id;
     }
@@ -95,11 +108,24 @@ public class ChangeLog extends PersistenceAudit<ChangeLog> {
         return this;
     }
 
+    /**
+     * Equals.
+     *
+     * @param obj
+     *            the obj
+     *
+     * @return true, if successful
+     */
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
 
+    /**
+     * Hash code.
+     *
+     * @return the int
+     */
     @Override
     public int hashCode() {
         return super.hashCode();

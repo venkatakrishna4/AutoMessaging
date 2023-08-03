@@ -1,5 +1,12 @@
 package com.krish.automessaging.enums;
 
+/**
+ * The Enum IndexEnum.
+ */
 public enum IndexEnum {
-    general_audit_index, user_index
+
+    /** The general audit index. */
+    general_audit_index,
+    /** The user index. */
+    user_index
 }

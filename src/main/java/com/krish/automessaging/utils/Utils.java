@@ -22,6 +22,14 @@ public class Utils {
     @Value("${elastic.tenant}")
     private String tenant;
 
+    /**
+     * Gets the final index.
+     *
+     * @param indexName
+     *            the index name
+     *
+     * @return the final index
+     */
     public String getFinalIndex(String indexName) {
         if (StringUtils.isNotBlank(tenant) && StringUtils.isNotBlank(indexName)
                 && !StringUtils.startsWith(indexName, tenant.concat("."))) {
@@ -30,10 +38,21 @@ public class Utils {
         return indexName;
     }
 
+    /**
+     * Generate UUID.
+     *
+     * @return the string
+     */
     public static String generateUUID() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    /**
+     * Sets the audit properties.
+     *
+     * @param source
+     *            the new audit properties
+     */
     public void setAuditProperties(BaseElasticObject source) {
         try {
             String user = null; // AuthUtils.getLoggedInUserId(); //TODO get logged-in user

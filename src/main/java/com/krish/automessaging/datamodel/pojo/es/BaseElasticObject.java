@@ -20,6 +20,9 @@ public interface BaseElasticObject {
 
     /**
      * Sets created time.
+     *
+     * @param createdTime
+     *            the new created time
      */
     public void setCreatedTime(Long createdTime);
 

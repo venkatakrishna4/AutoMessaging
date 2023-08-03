@@ -28,14 +28,39 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The Class UserUtils.
+ */
 @Component
+
+/** The Constant log. */
 @Slf4j
 public class UserUtils {
+
+    /** The client. */
     private final ElasticsearchClient client;
+
+    /** The utils. */
     private final Utils utils;
+
+    /** The object mapper. */
     private final ObjectMapper objectMapper;
+
+    /** The phone number util. */
     private final PhoneNumberUtil phoneNumberUtil;
 
+    /**
+     * Instantiates a new user utils.
+     *
+     * @param client
+     *            the client
+     * @param utils
+     *            the utils
+     * @param objectMapper
+     *            the object mapper
+     * @param phoneNumberUtil
+     *            the phone number util
+     */
     @Autowired
     public UserUtils(final ElasticsearchClient client, final Utils utils, final ObjectMapper objectMapper,
             final PhoneNumberUtil phoneNumberUtil) {
@@ -45,6 +70,17 @@ public class UserUtils {
         this.phoneNumberUtil = phoneNumberUtil;
     }
 
+    /**
+     * Gets the user by username or email or ID.
+     *
+     * @param value
+     *            the value
+     *
+     * @return the user by username or email or ID
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     public Optional<User> getUserByUsernameOrEmailOrID(String value) throws IOException {
         SearchResponse<User> searchResponse = client.search(SearchRequest.of(searchRequest -> searchRequest
                 .index(utils.getFinalIndex(IndexEnum.user_index.toString()))
@@ -62,16 +98,50 @@ public class UserUtils {
         return Optional.empty();
     }
 
+    /**
+     * Checks if is email exists.
+     *
+     * @param value
+     *            the value
+     *
+     * @return true, if is email exists
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     public boolean isEmailExists(String value) throws IOException {
         return getUserByUsernameOrEmailOrID(value).isPresent();
     }
 
+    /**
+     * Checks if is email and username associated to ID.
+     *
+     * @param id
+     *            the id
+     * @param email
+     *            the email
+     * @param username
+     *            the username
+     *
+     * @return true, if is email and username associated to ID
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     public boolean isEmailAndUsernameAssociatedToID(String id, String email, String username) throws IOException {
         Optional<User> existingUser = getUserByUsernameOrEmailOrID(id);
         return existingUser.map(user -> StringUtils.equalsIgnoreCase(user.getEmail(), email)
                 && StringUtils.equalsIgnoreCase(user.getUsername(), username)).orElse(false);
     }
 
+    /**
+     * Checks if is valida phone number.
+     *
+     * @param phone
+     *            the phone
+     *
+     * @return true, if is valida phone number
+     */
     public boolean isValidaPhoneNumber(String phone) {
         try {
             Phonenumber.PhoneNumber phoneNumber = phoneNumberUtil.parse(phone,
@@ -83,33 +153,68 @@ public class UserUtils {
         return false;
     }
 
+    /**
+     * Gets the whats app messaging by id.
+     *
+     * @param userId
+     *            the user id
+     * @param whatsAppId
+     *            the whats app id
+     *
+     * @return the whats app messaging by id
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     public Optional<WhatsAppMessaging> getWhatsAppMessagingById(String userId, String whatsAppId) throws IOException {
         SearchResponse<User> searchResponse = client.search(
-                SearchRequest.of(searchRequest -> searchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
-                        .query(QueryBuilders.bool()
-                        		.must(QueryBuilders.term().field("id").value(userId).build()._toQuery())
-                        		.must(QueryBuilders.term().field("whatsAppMessaging.id").value(whatsAppId).build()._toQuery())
-                        		.build()._toQuery())),
+                SearchRequest
+                        .of(searchRequest -> searchRequest
+                                .index(utils.getFinalIndex(IndexEnum.user_index.name())).query(
+                                        QueryBuilders.bool()
+                                                .must(QueryBuilders.term().field("id").value(userId).build()._toQuery())
+                                                .must(QueryBuilders.term().field("whatsAppMessaging.id")
+                                                        .value(whatsAppId).build()._toQuery())
+                                                .build()._toQuery())),
                 User.class);
         List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
-        if(ObjectUtils.isNotEmpty(users)) {
-        	return Optional.ofNullable(users.get(0).getWhatsAppMessaging()); 
+        if (ObjectUtils.isNotEmpty(users)) {
+            return Optional.ofNullable(users.get(0).getWhatsAppMessaging());
         }
         return Optional.empty();
     }
 
+    /**
+     * Gets the user by whats app messaging id.
+     *
+     * @param id
+     *            the id
+     *
+     * @return the user by whats app messaging id
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
     public Optional<User> getUserByWhatsAppMessagingId(String id) throws IOException {
         SearchResponse<User> searchResponse = client.search(
                 SearchRequest.of(SearchRequest -> SearchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
                         .query(QueryBuilders.term().field("whatsAppMessaging.id").value(id).build()._toQuery())),
                 User.class);
         List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
-        if(ObjectUtils.isNotEmpty(users)) {
-        return Optional.ofNullable(users.get(0));
+        if (ObjectUtils.isNotEmpty(users)) {
+            return Optional.ofNullable(users.get(0));
         }
         return Optional.empty();
     }
 
+    /**
+     * Map to user response record.
+     *
+     * @param user
+     *            the user
+     *
+     * @return the user response record
+     */
     public UserResponseRecord mapToUserResponseRecord(User user) {
         try {
             return objectMapper.readValue(objectMapper.writeValueAsString(user), UserResponseRecord.class);
@@ -119,6 +224,14 @@ public class UserUtils {
         return null;
     }
 
+    /**
+     * Map to user whats app messaging record.
+     *
+     * @param whatsAppMessaging
+     *            the whats app messaging
+     *
+     * @return the whats app messaging record
+     */
     public WhatsAppMessagingRecord mapToUserWhatsAppMessagingRecord(WhatsAppMessaging whatsAppMessaging) {
         try {
             return objectMapper.readValue(objectMapper.writeValueAsString(whatsAppMessaging),
