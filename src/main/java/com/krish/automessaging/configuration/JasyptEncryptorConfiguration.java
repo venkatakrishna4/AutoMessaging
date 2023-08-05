@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * {@link JasyptEncryptorConfiguration} has a bean jasyptStringEncryptor() that is used to create an encryptor to encode
- * and decode sensitive information.
+ * {@link JasyptEncryptorConfiguration} has a bean {@link #jasyptStringEncryptor()} that is used to create an encryptor
+ * to encode and decode sensitive information.
  */
 @Configuration
 public class JasyptEncryptorConfiguration {

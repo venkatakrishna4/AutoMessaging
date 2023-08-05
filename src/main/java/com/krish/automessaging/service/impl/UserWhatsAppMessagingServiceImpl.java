@@ -1,12 +1,16 @@
 package com.krish.automessaging.service.impl;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.pojo.WhatsAppMessaging;
@@ -24,16 +28,14 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.UpdateRequest;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class UserWhatsAppMessagingServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserWhatsAppMessagingServiceImpl.class);
 
     /** The client. */
     private final ElasticsearchClient client;
@@ -113,12 +115,12 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
         /*
          * If the user exists, then update the user with required WhatsApp Messaging information
          */
+        User oldUser = getNewObject(existingUser.get());
         Optional<User> user = existingUser.map(u -> {
-            if (Objects.isNull(u.getWhatsAppMessaging().getId())) {
+            if (StringUtils.isBlank(u.getWhatsAppMessaging().getId())) {
                 u.getWhatsAppMessaging().setId(Utils.generateUUID());
             }
             u.getWhatsAppMessaging().setFrom(whatsAppMessagingRecord.from());
-            u.getWhatsAppMessaging().setTo(whatsAppMessagingRecord.to());
             u.getWhatsAppMessaging().setMessages(whatsAppMessagingRecord.messages());
             IndexRequest<User> indexRequest = IndexRequest
                     .of(request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(u));
@@ -128,13 +130,14 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                                 .doc(indexRequest).id(u.getId()).upsert(u)),
                         User.class);
                 log.debug("Updated user with whatsAppMessage\n{}", u);
-                auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID())
-                        .ownerObjectId(existingUser.get().getId()).objectClass(WhatsAppMessaging.class).oldObject(null)
-                        .newObject(objectMapper.writeValueAsString(existingUser.get()))
-                        .action(GeneralAudit.Audit.UPDATE.toString())
-                        .comments("Adding WhatsApp Messaging for Existing User")
-                        .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest))
-                        .build());
+                auditUtils.addGeneralAudit(new GeneralAudit.Builder().setId(Utils.generateUUID())
+                        .setOwnerObjectId(existingUser.get().getId()).setObjectClass(WhatsAppMessaging.class)
+                        .setOldObject(objectMapper.writeValueAsString(oldUser))
+                        .setNewObject(objectMapper.writeValueAsString(existingUser.get()))
+                        .setAction(GeneralAudit.Audit.UPDATE.toString())
+                        .setComments("Adding WhatsApp Messaging for Existing User")
+                        .setLoggedInUserId(authUtils.getLoggedInUserId())
+                        .setClientIP(authUtils.getClientIP(servletRequest)).build());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
@@ -191,27 +194,27 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                 }
                 Optional<User> user = existingUser.map(u -> {
                     try {
-                        User oldUser = objectMapper.readValue(objectMapper.writeValueAsString(existingUser.get()),
-                                User.class);
+                        User oldUser = getNewObject(u);
                         /*
                          * Resetting WhatsApp Messaging to empty
                          */
-                        u.setWhatsAppMessaging(WhatsAppMessaging.builder().build());
+                        WhatsAppMessaging whatsApp = new WhatsAppMessaging("", "", new ArrayList<>());
+                        u.setWhatsAppMessaging(whatsApp);
                         IndexRequest<User> indexRequest = IndexRequest.of(
                                 request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(u));
                         client.update(
                                 UpdateRequest.of(updateRequest -> updateRequest.doc(indexRequest).id(u.getId())
                                         .index(utils.getFinalIndex(IndexEnum.user_index.name())).upsert(u)),
                                 User.class);
-                        auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID())
-                                .ownerObjectId(existingWhatsAppMessaging.get().getId())
-                                .objectClass(WhatsAppMessaging.class)
-                                .oldObject(objectMapper.writeValueAsString(oldUser))
-                                .newObject(objectMapper.writeValueAsString(existingWhatsAppMessaging.get()))
-                                .action(GeneralAudit.Audit.DELETE.toString())
-                                .comments("Deleting WhatsApp Messaging from UI")
-                                .loggedInUserId(authUtils.getLoggedInUserId())
-                                .clientIP(authUtils.getClientIP(servletRequest)).build());
+                        auditUtils.addGeneralAudit(new GeneralAudit.Builder().setId(Utils.generateUUID())
+                                .setOwnerObjectId(existingWhatsAppMessaging.get().getId())
+                                .setObjectClass(WhatsAppMessaging.class)
+                                .setOldObject(objectMapper.writeValueAsString(oldUser))
+                                .setNewObject(objectMapper.writeValueAsString(existingWhatsAppMessaging.get()))
+                                .setAction(GeneralAudit.Audit.DELETE.toString())
+                                .setComments("Deleting WhatsApp Messaging from UI")
+                                .setLoggedInUserId(authUtils.getLoggedInUserId())
+                                .setClientIP(authUtils.getClientIP(servletRequest)).build());
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     }
@@ -225,5 +228,23 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
                 log.error(e.getMessage(), e);
             }
         });
+    }
+
+    @Override
+    public String getTrimmedValue(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            return StringUtils.trim(value);
+        }
+        return value;
+    }
+
+    @Override
+    public User getNewObject(User data) {
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsString(data), User.class);
+        } catch (JsonProcessingException ex) {
+            log.error(ex.getMessage(), ex);
+        }
+        return null;
     }
 }

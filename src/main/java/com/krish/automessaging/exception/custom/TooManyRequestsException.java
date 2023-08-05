@@ -1,22 +1,5 @@
 package com.krish.automessaging.exception.custom;
 
-import lombok.Getter;
-import lombok.Setter;
-
-/**
- * Gets the message.
- *
- * @return the message
- */
-@Getter
-
-/**
- * Sets the message.
- *
- * @param message
- *            the new message
- */
-@Setter
 public class TooManyRequestsException extends RuntimeException {
 
     /** The Constant serialVersionUID. */
@@ -33,6 +16,14 @@ public class TooManyRequestsException extends RuntimeException {
      */
     public TooManyRequestsException(String message) {
         this.message = message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
     }
 
 }

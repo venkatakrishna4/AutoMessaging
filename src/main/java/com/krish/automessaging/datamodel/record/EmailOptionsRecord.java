@@ -3,14 +3,12 @@ package com.krish.automessaging.datamodel.record;
 import org.thymeleaf.context.Context;
 
 import jakarta.annotation.Nonnull;
-import lombok.Builder;
 
 /**
  * To string.
  *
  * @return the java.lang. string
  */
-@Builder
 public record EmailOptionsRecord(@Nonnull String fromEmail, @Nonnull String toEmail, String toName,
         @Nonnull String type, @Nonnull String subject, String message, String fileName, Context context,
         String imageResourceName) {

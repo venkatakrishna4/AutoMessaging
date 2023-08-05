@@ -3,122 +3,101 @@ package com.krish.automessaging.datamodel.pojo;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 /**
- * Hash code.
- *
- * @return the int
+ * {@link WhatsAppMessaging} has WhatsApp Messaging information to be used for the Automation processing
  */
-@Data
 
-/**
- * To string.
- *
- * @return the java.lang. string
- */
-@ToString
-
-/**
- * Instantiates a new whats app messaging.
- */
-@NoArgsConstructor
-
-/**
- * Instantiates a new whats app messaging.
- *
- * @param id
- *            the id
- * @param from
- *            the from
- * @param to
- *            the to
- * @param messages
- *            the messages
- */
-@AllArgsConstructor
-
-/**
- * To string.
- *
- * @return the java.lang. string
- */
-@Builder
 public class WhatsAppMessaging {
-
-    /**
-     * The Enum Type.
-     */
     public enum Type {
-
-        /** The auto. */
-        AUTO,
-        /** The manual. */
-        MANUAL
+        AUTO, MANUAL
     }
 
-    /** The id. */
     private String id;
-
-    /** The from. */
     private String from;
-
-    /** The to. */
-    private String to;
-
-    /** The messages. */
     private List<Message> messages = new ArrayList<>();
 
-    /**
-     * Hash code.
-     *
-     * @return the int
-     */
-    @Data
+    public WhatsAppMessaging() {
+    }
 
-    /**
-     * To string.
-     *
-     * @return the java.lang. string
-     */
-    @ToString
+    public WhatsAppMessaging(String id, String from, List<Message> messages) {
+        super();
+        this.id = id;
+        this.from = from;
+        this.messages = messages;
+    }
 
-    /**
-     * Instantiates a new message.
-     */
-    @NoArgsConstructor
+    public String getId() {
+        return id;
+    }
 
-    /**
-     * Instantiates a new message.
-     *
-     * @param type
-     *            the type
-     * @param timestamp
-     *            the timestamp
-     * @param message
-     *            the message
-     */
-    @AllArgsConstructor
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    /**
-     * To string.
-     *
-     * @return the java.lang. string
-     */
-    @Builder
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
+    }
+
     public static class Message {
-
-        /** The type. */
         private String type = Type.AUTO.toString();
-
-        /** The timestamp. */
+        private String to;
         private long timestamp;
-
-        /** The message. */
         private String message;
+
+        public Message() {
+        }
+
+        public Message(String type, String to, long timestamp, String message) {
+            super();
+            this.type = type;
+            this.to = to;
+            this.timestamp = timestamp;
+            this.message = message;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getTo() {
+            return to;
+        }
+
+        public void setTo(String to) {
+            this.to = to;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(long timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
     }
 }

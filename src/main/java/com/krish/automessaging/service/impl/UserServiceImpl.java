@@ -2,11 +2,13 @@ package com.krish.automessaging.service.impl;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +16,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.pojo.audit.GeneralAudit;
+import com.krish.automessaging.datamodel.record.EmailOptionsRecord;
 import com.krish.automessaging.datamodel.record.PaginatedResponseRecord;
 import com.krish.automessaging.datamodel.record.UserRequestRecord;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
 import com.krish.automessaging.enums.IndexEnum;
 import com.krish.automessaging.exception.custom.EmailExistsException;
 import com.krish.automessaging.exception.custom.RecordNotFoundException;
+import com.krish.automessaging.service.EmailService;
 import com.krish.automessaging.service.UserService;
 import com.krish.automessaging.utils.AuditUtils;
 import com.krish.automessaging.utils.AuthUtils;
@@ -33,17 +37,16 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.UpdateRequest;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class UserServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class UserServiceImpl implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     /** The client. */
     private final ElasticsearchClient client;
@@ -65,6 +68,13 @@ public class UserServiceImpl implements UserService {
 
     /** The object mapper. */
     private final ObjectMapper objectMapper;
+    private final EmailService emailService;
+
+    @Value("${server.host}")
+    private String host;
+
+    @Value("${server.port}")
+    private String port;
 
     /**
      * Instantiates a new user service impl.
@@ -86,7 +96,8 @@ public class UserServiceImpl implements UserService {
      */
     @Autowired
     public UserServiceImpl(final ElasticsearchClient client, final PasswordEncoder passwordEncoder, UserUtils userUtils,
-            Utils utils, AuditUtils auditUtils, AuthUtils authUtils, ObjectMapper objectMapper) {
+            Utils utils, AuditUtils auditUtils, AuthUtils authUtils, ObjectMapper objectMapper,
+            EmailService emailService) {
         this.client = client;
         this.passwordEncoder = passwordEncoder;
         this.userUtils = userUtils;
@@ -94,6 +105,7 @@ public class UserServiceImpl implements UserService {
         this.auditUtils = auditUtils;
         this.authUtils = authUtils;
         this.objectMapper = objectMapper;
+        this.emailService = emailService;
     }
 
     /**
@@ -128,20 +140,26 @@ public class UserServiceImpl implements UserService {
         /*
          * Trim all the String fields
          */
-        User newUser = User.builder().id(Utils.generateUUID()).name(getTrimmedValue(userRequestRecord.name()))
-                .username(getTrimmedValue(userRequestRecord.username()))
-                .password(passwordEncoder.encode(userRequestRecord.password()))
-                .email(getTrimmedValue(StringUtils.lowerCase(userRequestRecord.email())))
-                .phone(getTrimmedValue(userRequestRecord.phone())).build();
+        User newUser = new User.Builder().setId(Utils.generateUUID()).setName(getTrimmedValue(userRequestRecord.name()))
+                .setUsername(getTrimmedValue(userRequestRecord.username()))
+                .setPassword(passwordEncoder.encode(userRequestRecord.password()))
+                .setEmail(getTrimmedValue(StringUtils.lowerCase(userRequestRecord.email())))
+                .setPasswordResetKey(Utils.generateUUID()).setPhone(getTrimmedValue(userRequestRecord.phone())).build();
         utils.setAuditProperties(newUser);
         log.debug("Inserting user {} into Elasticsearch", newUser);
         client.index(IndexRequest.of(insertUserRequest -> insertUserRequest
                 .index(utils.getFinalIndex(IndexEnum.user_index.toString())).id(newUser.getId()).document(newUser)));
 
-        auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(newUser.getId())
-                .objectClass(User.class).oldObject(null).newObject(objectMapper.writeValueAsString(newUser))
-                .action(GeneralAudit.Audit.ADD.toString()).comments("New User is getting subscribed from UI")
-                .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest)).build());
+        /*
+         * Send User for activation of the User
+         */
+        sendEmailConfirmation(newUser, servletRequest);
+
+        auditUtils.addGeneralAudit(new GeneralAudit.Builder().setId(Utils.generateUUID())
+                .setOwnerObjectId(newUser.getId()).setObjectClass(User.class).setOldObject(null)
+                .setNewObject(objectMapper.writeValueAsString(newUser)).setAction(GeneralAudit.Audit.ADD.toString())
+                .setComments("New User is getting subscribed from UI").setLoggedInUserId(authUtils.getLoggedInUserId())
+                .setClientIP(authUtils.getClientIP(servletRequest)).build());
         return "User created successfully";
     }
 
@@ -159,7 +177,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseRecord getUser(String id) throws IOException {
         return userUtils.getUserByUsernameOrEmailOrID(id).map(userUtils::mapToUserResponseRecord)
-                .orElseThrow(() -> new NoSuchElementException("User not found for id " + id));
+                .orElseThrow(() -> new RecordNotFoundException("No Record found for ID " + id));
     }
 
     /**
@@ -206,39 +224,38 @@ public class UserServiceImpl implements UserService {
         }
         if (!userUtils.isEmailAndUsernameAssociatedToID(userRequestRecord.id(), userRequestRecord.email(),
                 userRequestRecord.username())) {
-            throw new IllegalArgumentException("Email Address cannot be updated");
+            throw new IllegalArgumentException("Email Address or Username cannot be updated");
         }
         Optional<User> existingUser = userUtils.getUserByUsernameOrEmailOrID(userRequestRecord.id());
-        User oldUser = existingUser.map(user -> {
-            try {
-                return objectMapper.readValue(objectMapper.writeValueAsString(existingUser.get()), User.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }).orElseThrow(() -> new RecordNotFoundException("User Record not found for ID " + userRequestRecord.id()));
+        User oldUser = existingUser.map(this::getNewObject).orElseThrow(
+                () -> new RecordNotFoundException("User Record not found for ID " + userRequestRecord.id()));
 
         existingUser.map(user -> {
             user.setName(getTrimmedValue(userRequestRecord.name()));
-            user.setPassword(userRequestRecord.password());
+            user.setPassword(passwordEncoder.encode(userRequestRecord.password()));
             user.setPhone(userRequestRecord.phone());
-
-            IndexRequest<User> indexRequest = IndexRequest
-                    .of(request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(user));
-            try {
-                client.update(UpdateRequest
-                        .of(updateRequest -> updateRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
-                                .doc(indexRequest).id(userRequestRecord.id()).upsert(user)),
-                        User.class);
-                auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(user.getId())
-                        .objectClass(User.class).oldObject(objectMapper.writeValueAsString(oldUser))
-                        .newObject(objectMapper.writeValueAsString(user)).action(GeneralAudit.Audit.UPDATE.toString())
-                        .comments("Updating exising user from UI").loggedInUserId(authUtils.getLoggedInUserId())
-                        .clientIP(authUtils.getClientIP(servletRequest)).build());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
             return user;
         });
+
+        IndexRequest<User> indexRequest = IndexRequest.of(request -> request
+                .index(utils.getFinalIndex(IndexEnum.user_index.name())).document(existingUser.get()));
+        try {
+            client.update(UpdateRequest
+                    .of(updateRequest -> updateRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                            .doc(indexRequest).id(userRequestRecord.id())),
+                    User.class);
+            log.debug("Updated the user\n{}", existingUser.get());
+            auditUtils.addGeneralAudit(new GeneralAudit.Builder().setId(Utils.generateUUID())
+                    .setOwnerObjectId(existingUser.get().getId()).setObjectClass(User.class)
+                    .setOldObject(objectMapper.writeValueAsString(oldUser))
+                    .setNewObject(objectMapper.writeValueAsString(existingUser.get()))
+                    .setAction(GeneralAudit.Audit.UPDATE.toString()).setComments("Updating exising user from UI")
+                    .setLoggedInUserId(authUtils.getLoggedInUserId()).setClientIP(authUtils.getClientIP(servletRequest))
+                    .build());
+        } catch (IOException e) {
+            log.debug(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
         return "User updated successfully";
     }
 
@@ -255,15 +272,18 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void deleteUser(String id, HttpServletRequest servletRequest) throws IOException {
+        log.debug("Received request to delete the user for id {}", id);
         userUtils.getUserByUsernameOrEmailOrID(id).ifPresentOrElse(user -> {
             try {
                 client.delete(
                         deleteRequest -> deleteRequest.index(utils.getFinalIndex(IndexEnum.user_index.name())).id(id));
-                auditUtils.addGeneralAudit(GeneralAudit.builder().id(Utils.generateUUID()).ownerObjectId(user.getId())
-                        .objectClass(User.class).oldObject(objectMapper.writeValueAsString(user)).newObject(null)
-                        .action(GeneralAudit.Audit.DELETE.toString()).comments("Deleting exising user from UI")
-                        .loggedInUserId(authUtils.getLoggedInUserId()).clientIP(authUtils.getClientIP(servletRequest))
-                        .build());
+                log.debug("Deleted the user {}", user.getEmail());
+                auditUtils.addGeneralAudit(new GeneralAudit.Builder().setId(Utils.generateUUID())
+                        .setOwnerObjectId(user.getId()).setObjectClass(User.class)
+                        .setOldObject(objectMapper.writeValueAsString(user)).setNewObject(null)
+                        .setAction(GeneralAudit.Audit.DELETE.toString()).setComments("Deleting exising user from UI")
+                        .setLoggedInUserId(authUtils.getLoggedInUserId())
+                        .setClientIP(authUtils.getClientIP(servletRequest)).build());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -284,5 +304,38 @@ public class UserServiceImpl implements UserService {
             return StringUtils.trim(value);
         }
         return value;
+    }
+
+    private void sendEmailConfirmation(User user, HttpServletRequest servletRequest) throws IOException {
+
+        String emailVerificationLink = null;
+
+        if ("localhost".equals(host)) {
+            emailVerificationLink = "http://" + host + ":" + port;
+        } else {
+            emailVerificationLink = "https://" + host + ":" + port;
+        }
+        emailVerificationLink += "/user/v1/verification/email/" + user.getPasswordResetKey();
+
+        final String message = "Please click here to confirm your identity " + emailVerificationLink;
+        EmailOptionsRecord emailOptionsRecord = new EmailOptionsRecord("noreply@krish.com", user.getEmail(),
+                user.getName(), EmailOptionsRecord.TYPE_TEXT, "Email Verification for " + user.getName(), message, null,
+                null, null);
+
+        try {
+            emailService.sendEmail(emailOptionsRecord);
+        } catch (MessagingException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public User getNewObject(User data) {
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsString(data), User.class);
+        } catch (JsonProcessingException ex) {
+            log.error(ex.getMessage(), ex);
+        }
+        return null;
     }
 }

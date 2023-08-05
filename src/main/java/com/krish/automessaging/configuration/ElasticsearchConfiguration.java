@@ -42,7 +42,7 @@ public class ElasticsearchConfiguration {
     private String elasticPassword;
 
     /**
-     * Method getRestClient() creates {@link RestClient} using {@link BasicCredentialsProvider}.
+     * Method {@link #getRestClient()} creates {@link RestClient} using {@link BasicCredentialsProvider}.
      *
      * @return {@link RestClient}
      */

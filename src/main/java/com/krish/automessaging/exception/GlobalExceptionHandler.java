@@ -25,6 +25,8 @@ import com.krish.automessaging.exception.custom.EmailExistsException;
 import com.krish.automessaging.exception.custom.RecordNotFoundException;
 import com.krish.automessaging.exception.custom.TooManyRequestsException;
 
+import jakarta.validation.ConstraintViolationException;
+
 /**
  * The Class GlobalExceptionHandler.
  */
@@ -104,8 +106,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(EmailExistsException.class)
     public ResponseEntity<Object> handleEmailExistsException(EmailExistsException ex) {
-        ApiError apiError = ApiError.builder().message("Email already in use. Please use different Email address")
-                .timestamp(TIME_STAMP).status(HttpStatus.CONFLICT).build();
+        ApiError apiError = new ApiError("Email already in use. Please use different Email address",
+                HttpStatus.CONFLICT, TIME_STAMP, null);
         return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
     }
 
@@ -127,10 +129,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         List<ApiSubErrors> subErrors = new ArrayList<>();
-        ex.getFieldErrors().forEach(fieldError -> subErrors.add(
-                ApiSubErrors.builder().field(fieldError.getField()).message(fieldError.getDefaultMessage()).build()));
-        ApiError apiError = ApiError.builder().message("Please check the sub errors").status(status)
-                .timestamp(TIME_STAMP).subErrors(subErrors).build();
+        ex.getFieldErrors().forEach(
+                fieldError -> subErrors.add(new ApiSubErrors(fieldError.getField(), fieldError.getDefaultMessage())));
+        ApiError apiError = new ApiError("Please check the sub errors", HttpStatus.BAD_REQUEST, TIME_STAMP, subErrors);
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(apiError);
     }
 
@@ -144,8 +145,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<Object> handleTooManyRequestsException(TooManyRequestsException ex) {
-        ApiError apiError = ApiError.builder().status(HttpStatus.TOO_MANY_REQUESTS).subErrors(null)
-                .message(ex.getMessage()).timestamp(TIME_STAMP).build();
+        ApiError apiError = new ApiError("Too Many Requests", HttpStatus.TOO_MANY_REQUESTS, TIME_STAMP, null);
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(apiError);
     }
 
@@ -159,9 +159,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(RecordNotFoundException.class)
     public ResponseEntity<Object> handleRecordNotFoundException(RecordNotFoundException ex) {
-        ApiError apiError = ApiError.builder().status(HttpStatus.NOT_FOUND).subErrors(null).message(ex.getMessage())
-                .timestamp(TIME_STAMP).build();
+        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.NOT_FOUND, TIME_STAMP, null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
+    }
+
+    /**
+     * Handle constraint violation exception.
+     *
+     * @param ex
+     *            the ex
+     *
+     * @return the response entity
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex) {
+        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST, TIME_STAMP, null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
     /**
@@ -174,8 +187,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Object> handleIOException(IOException ex) {
-        ApiError apiError = ApiError.builder().message(ex.getMessage()).timestamp(TIME_STAMP)
-                .status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, TIME_STAMP, null);
+        return ResponseEntity.internalServerError().body(apiError);
+    }
+
+    /**
+     * Handle all exceptions.
+     *
+     * @param ex
+     *            the ex
+     *
+     * @return the response entity
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAllExceptions(Exception ex) {
+        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, TIME_STAMP, null);
         return ResponseEntity.internalServerError().body(apiError);
     }
 }

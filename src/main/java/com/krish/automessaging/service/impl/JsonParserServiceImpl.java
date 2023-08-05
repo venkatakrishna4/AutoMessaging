@@ -11,15 +11,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krish.automessaging.service.JsonParserService;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * The Class JsonParserServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class JsonParserServiceImpl implements JsonParserService {
 
     /** The context loader. */

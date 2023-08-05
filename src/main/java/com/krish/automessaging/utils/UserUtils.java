@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,16 +28,15 @@ import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class UserUtils.
  */
 @Component
 
-/** The Constant log. */
-@Slf4j
 public class UserUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
 
     /** The client. */
     private final ElasticsearchClient client;
@@ -197,8 +198,20 @@ public class UserUtils {
      */
     public Optional<User> getUserByWhatsAppMessagingId(String id) throws IOException {
         SearchResponse<User> searchResponse = client.search(
-                SearchRequest.of(SearchRequest -> SearchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                SearchRequest.of(searchRequest -> searchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
                         .query(QueryBuilders.term().field("whatsAppMessaging.id").value(id).build()._toQuery())),
+                User.class);
+        List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
+        if (ObjectUtils.isNotEmpty(users)) {
+            return Optional.ofNullable(users.get(0));
+        }
+        return Optional.empty();
+    }
+
+    public Optional<User> getUserByPasswordResetKey(String key) throws IOException {
+        SearchResponse<User> searchResponse = client.search(
+                SearchRequest.of(searchRequest -> searchRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                        .query(QueryBuilders.term().field("passwordResetKey.keyword").value(key).build()._toQuery())),
                 User.class);
         List<User> users = searchResponse.hits().hits().stream().map(Hit::source).toList();
         if (ObjectUtils.isNotEmpty(users)) {

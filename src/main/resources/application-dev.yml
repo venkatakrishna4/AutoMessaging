@@ -4,6 +4,7 @@
 
 # Setting up the Tomcat Server port
 server:
+  host: localhost
   port: 6060
 
 # Setting up the Logging level

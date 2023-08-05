@@ -2,6 +2,7 @@ package com.krish.automessaging.service;
 
 import java.io.IOException;
 
+import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.record.WhatsAppMessagingRecord;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * The Interface UserWhatsAppMessagingService.
  */
-public interface UserWhatsAppMessagingService {
+public interface UserWhatsAppMessagingService extends BaseServiceProvider<User> {
 
     /**
      * Save whats app messaging.

@@ -4,6 +4,9 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -19,17 +22,14 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class EmailServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class EmailServiceImpl implements EmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailServiceImpl.class);
     /** The mail sender. */
     private JavaMailSender mailSender;
 
@@ -85,7 +85,11 @@ public class EmailServiceImpl implements EmailService {
         message.setFrom(emailOptionsRecord.fromEmail());
         message.setTo(emailOptionsRecord.toEmail());
 
-        if (EmailOptionsRecord.TYPE_TEXT.equals(emailOptionsRecord.type())) {
+        String type = emailOptionsRecord.type();
+        if (StringUtils.isBlank(type)) {
+            type = EmailOptionsRecord.TYPE_TEXT;
+        }
+        if (EmailOptionsRecord.TYPE_TEXT.equals(type)) {
             message.setText(emailOptionsRecord.message(), false);
         } else {
             final String htmlContent = this.templateEngine

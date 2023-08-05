@@ -19,6 +19,8 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 
 /**
  * The Class SpringMailConfiguration.
+ *
+ * Configure the {@link JavaMailSender}
  */
 @Configuration
 public class SpringMailConfiguration {

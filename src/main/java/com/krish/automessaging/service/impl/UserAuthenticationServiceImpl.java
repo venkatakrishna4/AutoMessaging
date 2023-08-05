@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,16 +22,14 @@ import com.krish.automessaging.service.JsonParserService;
 import com.krish.automessaging.utils.UserUtils;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class UserAuthenticationServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class UserAuthenticationServiceImpl implements UserDetailsService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserAuthenticationServiceImpl.class);
 
     /** The client. */
     private final ElasticsearchClient client;

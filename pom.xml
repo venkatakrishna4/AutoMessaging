@@ -11,8 +11,8 @@
   <groupId>com.krish</groupId>
   <artifactId>AutoMessaging</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>SpringFluxLearning</name>
-  <description>SpringFluxLearning</description>
+  <name>AutoMessaging</name>
+  <description>Automatic Messaging System</description>
   <properties>
     <java.version>17</java.version>
     <elastic.version>8.9.0</elastic.version>
@@ -68,11 +68,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>

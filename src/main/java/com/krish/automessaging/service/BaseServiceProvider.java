@@ -16,5 +16,7 @@ public interface BaseServiceProvider<T> {
      *
      * @return the trimmed value
      */
-    T getTrimmedValue(T data);
+    String getTrimmedValue(String data);
+
+    T getNewObject(T data);
 }

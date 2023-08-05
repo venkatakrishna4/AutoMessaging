@@ -3,6 +3,7 @@ package com.krish.automessaging.service;
 import java.io.IOException;
 import java.util.List;
 
+import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.datamodel.record.PaginatedResponseRecord;
 import com.krish.automessaging.datamodel.record.UserRequestRecord;
 import com.krish.automessaging.datamodel.record.UserResponseRecord;
@@ -12,7 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * The interface User service.
  */
-public interface UserService extends BaseServiceProvider<String> {
+public interface UserService extends BaseServiceProvider<User> {
 
     /**
      * Create user string.

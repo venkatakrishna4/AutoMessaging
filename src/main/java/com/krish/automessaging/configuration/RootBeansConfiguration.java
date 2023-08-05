@@ -8,6 +8,8 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 /**
  * The Class RootBeansConfiguration.
+ *
+ * Create all the required beans from here
  */
 @Configuration
 public class RootBeansConfiguration {

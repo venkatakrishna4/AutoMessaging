@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -25,16 +27,14 @@ import com.krish.automessaging.service.AdminElasticService;
 import com.krish.automessaging.service.ElasticMappingService;
 
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class ElasticMappingServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class ElasticMappingServiceImpl implements ElasticMappingService {
+
+    private static final Logger log = LoggerFactory.getLogger(ElasticMappingServiceImpl.class);
 
     /** The admin elastic service. */
     private final AdminElasticService adminElasticService;

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,16 +19,14 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class AdminElasticServiceImpl.
  */
 @Service
-
-/** The Constant log. */
-@Slf4j
 public class AdminElasticServiceImpl implements AdminElasticService {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminElasticServiceImpl.class);
 
     /** The client. */
     private ElasticsearchClient client;

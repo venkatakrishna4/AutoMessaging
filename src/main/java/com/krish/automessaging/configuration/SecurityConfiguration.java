@@ -70,6 +70,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.cors(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers("/login").permitAll()
+                        .requestMatchers("/user/v1/verification/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/user/public").permitAll().anyRequest()
                         .authenticated())
                 .authenticationManager(
