@@ -33,15 +33,17 @@ public class UserVerificationServiceImpl implements UserVerificationService {
     private final AuthUtils authUtils;
     private final AuditUtils auditUtils;
     private final ObjectMapper objectMapper;
+    private final Utils utils;
 
     @Autowired
     public UserVerificationServiceImpl(ElasticsearchClient client, UserUtils userUtils, AuthUtils authUtils,
-            AuditUtils auditUtils, ObjectMapper objectMapper) {
+            AuditUtils auditUtils, ObjectMapper objectMapper, Utils utils) {
         this.client = client;
         this.userUtils = userUtils;
         this.auditUtils = auditUtils;
         this.authUtils = authUtils;
         this.objectMapper = objectMapper;
+        this.utils = utils;
     }
 
     @Override
@@ -55,13 +57,13 @@ public class UserVerificationServiceImpl implements UserVerificationService {
         // update the user activation status
         existingUser.map(user -> {
             user.setActivated(true);
-            user.setPasswordResetKey(null);
+            user.setPasswordResetKey("");
 
             IndexRequest<User> indexRequest = IndexRequest
-                    .of(request -> request.index(IndexEnum.user_index.name()).document(user));
+                    .of(request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(user));
             try {
-                client.update(updateRequest -> updateRequest.index(IndexEnum.user_index.name()).id(user.getId())
-                        .doc(indexRequest).upsert(user), User.class);
+                client.update(updateRequest -> updateRequest.index(utils.getFinalIndex(IndexEnum.user_index.name()))
+                        .id(user.getId()).doc(indexRequest).upsert(user), User.class);
                 auditUtils.addGeneralAudit(
                         new GeneralAudit.Builder().setId(Utils.generateUUID()).setOwnerObjectId(user.getId())
                                 .setObjectClass(User.class).setOldObject(objectMapper.writeValueAsString(user))

@@ -30,7 +30,8 @@ elastic:
 login:
   username: ENC(RnHUlRzG/LzKvMsoMnYlUw==)
   password: $2a$12$k9zbyDmaWo8GumZ8UqSDD.N9bt8TYKL/U5HJJS/eOUQ6mPVSZqrQC
-  
+ 
+# Setting up Email Information 
 email:
   username: ENC(IHtWPzyOTxiTu2ZyrOXFat5xdon6iMr2bJubkWv+e8evEJTDCjrcWg==)
   password: ENC(WI1MDP06Lmtj6GZM3BKBF+LqiMOYm+XqDUJRa0e3GiU=)
@@ -38,3 +39,8 @@ email:
   port: 587
   useTLS: true
   from: Venkat
+  
+# Setting up WhatsApp Information
+whatsapp:
+  phoneNumberId: ENC(MDFvfIaKznAOlJq3duKBPFKx1XNJR5pz)
+  token: ENC(okYyb523gDAvSYubltadIDqB+JWjoPmyw9HHIOyA0uhOGOE+YR7NWYXX10FOehf72InJvHMsRGuXFfipk9W0xuH5cY1sKeSxYwmvItfST3MpC3QZLtXw9ilAEcM3zL5g2wDt/wQ+qqJHNvuZKuGbLsWx+Zk4+6vhIJ/8ZcvhV1d5xZaV93gg9WL1YO3/1Iq5+PQc/i5bH9l2WXUXWUV0SiQKGXkIVjseX5SpOfHnjnPkv8DPfKtrDBCZaa+8D2Y7EFhWbw6FsshbwjcDfNKX3A==)

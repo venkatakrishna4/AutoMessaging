@@ -104,6 +104,9 @@ public class GeneralAudit extends PersistenceAudit<GeneralAudit> {
         return ttlTime;
     }
 
+    public GeneralAudit() {
+    }
+
     public GeneralAudit(Builder builder) {
         super();
         this.id = builder.id;

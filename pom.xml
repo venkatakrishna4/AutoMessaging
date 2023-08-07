@@ -26,15 +26,18 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
-<dependency>
-    <groupId>javax.cache</groupId>
-    <artifactId>cache-api</artifactId>
-</dependency>
-
+	<dependency>
+	    <groupId>javax.cache</groupId>
+	    <artifactId>cache-api</artifactId>
+	</dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+    <dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-webflux</artifactId>
+	</dependency>
     <dependency>
       <groupId>org.springframework.session</groupId>
       <artifactId>spring-session-core</artifactId>
@@ -44,13 +47,11 @@
 		<artifactId>bucket4j-core</artifactId>
 		<version>7.6.0</version>
 	</dependency>
-	<!-- https://mvnrepository.com/artifact/com.github.vladimir-bukhtoyarov/bucket4j-jcache -->
-<dependency>
-    <groupId>com.github.vladimir-bukhtoyarov</groupId>
-    <artifactId>bucket4j-jcache</artifactId>
-    <version>7.6.0</version>
-</dependency>
-
+	<dependency>
+	    <groupId>com.github.vladimir-bukhtoyarov</groupId>
+	    <artifactId>bucket4j-jcache</artifactId>
+	    <version>7.6.0</version>
+	</dependency>
     <dependency>
       <groupId>com.github.ulisesbocchio</groupId>
       <artifactId>jasypt-spring-boot-starter</artifactId>
@@ -108,11 +109,14 @@
       <artifactId>elasticsearch-java</artifactId>
       <version>${elastic.version}</version>
     </dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-mail</artifactId>
-</dependency>
-
+	<dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-mail</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-quartz</artifactId>
+	</dependency>
   </dependencies>
 
   <build>
@@ -170,48 +174,47 @@
           <lineSeparator>\n</lineSeparator>
           <encoding>${project.build.sourceEncoding}</encoding>
           <sortProperties>true</sortProperties>
-          <keepBlankLines>true</keepBlankLines>
-          <sortDependencies>true</sortDependencies>
+          <sortDependencies>false</sortDependencies>
           <sortPlugins>true</sortPlugins>
         </configuration>
       </plugin>
       <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.codehaus.mojo</groupId>
-                                        <artifactId>keytool-maven-plugin</artifactId>
-                                        <versionRange>[1.5,)</versionRange>
-                                        <goals>
-                                            <goal>generateKeyPair</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>com.coveo</groupId>
-                                        <artifactId>fmt-maven-plugin</artifactId>
-                                        <versionRange>[2.5.0,)</versionRange>
-                                        <goals>
-                                            <goal>format</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
+        <groupId>org.eclipse.m2e</groupId>
+        <artifactId>lifecycle-mapping</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+            <lifecycleMappingMetadata>
+                <pluginExecutions>
+                    <pluginExecution>
+                        <pluginExecutionFilter>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>keytool-maven-plugin</artifactId>
+                            <versionRange>[1.5,)</versionRange>
+                            <goals>
+                                <goal>generateKeyPair</goal>
+                            </goals>
+                        </pluginExecutionFilter>
+                        <action>
+                            <ignore />
+                        </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                        <pluginExecutionFilter>
+                            <groupId>com.coveo</groupId>
+                            <artifactId>fmt-maven-plugin</artifactId>
+                            <versionRange>[2.5.0,)</versionRange>
+                            <goals>
+                                <goal>format</goal>
+                            </goals>
+                        </pluginExecutionFilter>
+                        <action>
+                            <ignore />
+                        </action>
+                    </pluginExecution>
+                </pluginExecutions>
+            </lifecycleMappingMetadata>
+        </configuration>
+    </plugin>
     </plugins>
   </build>
 </project>

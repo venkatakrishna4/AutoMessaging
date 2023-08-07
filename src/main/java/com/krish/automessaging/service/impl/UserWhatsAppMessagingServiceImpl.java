@@ -120,8 +120,8 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
             if (StringUtils.isBlank(u.getWhatsAppMessaging().getId())) {
                 u.getWhatsAppMessaging().setId(Utils.generateUUID());
             }
-            u.getWhatsAppMessaging().setFrom(whatsAppMessagingRecord.from());
-            u.getWhatsAppMessaging().setMessages(whatsAppMessagingRecord.messages());
+            u.getWhatsAppMessaging().setFrom(getTrimmedValue(whatsAppMessagingRecord.from()));
+            u.getWhatsAppMessaging().getMessages().addAll(whatsAppMessagingRecord.messages());
             IndexRequest<User> indexRequest = IndexRequest
                     .of(request -> request.index(utils.getFinalIndex(IndexEnum.user_index.name())).document(u));
             try {
@@ -141,6 +141,7 @@ public class UserWhatsAppMessagingServiceImpl implements UserWhatsAppMessagingSe
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
+
             return u;
         });
         return "WhatsApp Messaging is saved for User " + user.get().getName();

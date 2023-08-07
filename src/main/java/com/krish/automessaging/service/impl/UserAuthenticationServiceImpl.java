@@ -21,8 +21,6 @@ import com.krish.automessaging.datamodel.pojo.User;
 import com.krish.automessaging.service.JsonParserService;
 import com.krish.automessaging.utils.UserUtils;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-
 /**
  * The Class UserAuthenticationServiceImpl.
  */
@@ -30,9 +28,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 public class UserAuthenticationServiceImpl implements UserDetailsService {
 
     private static final Logger log = LoggerFactory.getLogger(UserAuthenticationServiceImpl.class);
-
-    /** The client. */
-    private final ElasticsearchClient client;
 
     /** The user utils. */
     private final UserUtils userUtils;
@@ -51,9 +46,7 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
      *            the json parser service
      */
     @Autowired
-    public UserAuthenticationServiceImpl(final ElasticsearchClient client, final UserUtils userUtils,
-            JsonParserService jsonParserService) {
-        this.client = client;
+    public UserAuthenticationServiceImpl(final UserUtils userUtils, JsonParserService jsonParserService) {
         this.userUtils = userUtils;
         this.jsonParserService = jsonParserService;
     }
@@ -105,6 +98,6 @@ public class UserAuthenticationServiceImpl implements UserDetailsService {
         List<GrantedAuthority> authorities = new ArrayList<>(
                 privileges.stream().map(SimpleGrantedAuthority::new).toList());
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-                !user.isDisabled(), true, true, true, authorities);
+                !user.isDisabled(), true, true, user.isActivated(), authorities);
     }
 }
