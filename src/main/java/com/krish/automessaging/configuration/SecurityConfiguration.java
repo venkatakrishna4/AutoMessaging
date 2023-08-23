@@ -88,11 +88,9 @@ public class SecurityConfiguration {
                         .requestMatchers("/user/v1/verification/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/user/public").permitAll().anyRequest()
                         .authenticated())
-                // TODO: fix authentication provider issue
-                // .authenticationManager(
-                // new ProviderManager(inMemoryAuthenticationProvider(), userDetailsAuthenticationProvider()))
-                .httpBasic(Customizer.withDefaults()).formLogin(Customizer.withDefaults())
-                .logout(Customizer.withDefaults())
+                .authenticationProvider(this.inMemoryAuthenticationProvider())
+                .authenticationProvider(this.userDetailsAuthenticationProvider()).httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults()).logout(Customizer.withDefaults())
                 .oauth2Login(oauth -> oauth.clientRegistrationRepository(clientRegistrationRepository)
                         .defaultSuccessUrl("/api/v1/user/krishna")
                         .userInfoEndpoint(user -> user.oidcUserService(oidcUserService)).authorizationEndpoint(
