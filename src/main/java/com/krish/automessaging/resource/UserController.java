@@ -77,7 +77,7 @@ public class UserController {
      *             Signals that an I/O exception has occurred.
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_GET', 'ROLE_ADMIN'})")
+    // @PreAuthorize("hasAnyAuthority({'PRIVILEGE_USER_GET', 'ROLE_ADMIN'})")
     public ResponseEntity<UserResponseRecord> getUser(
             @NotBlank(message = "Valid ID required to find user") @PathVariable String id) throws IOException {
         return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);

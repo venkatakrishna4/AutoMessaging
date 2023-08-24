@@ -44,3 +44,13 @@ email:
 whatsapp:
   phoneNumberId: ENC(MDFvfIaKznAOlJq3duKBPFKx1XNJR5pz)
   token: ENC(okYyb523gDAvSYubltadIDqB+JWjoPmyw9HHIOyA0uhOGOE+YR7NWYXX10FOehf72InJvHMsRGuXFfipk9W0xuH5cY1sKeSxYwmvItfST3MpC3QZLtXw9ilAEcM3zL5g2wDt/wQ+qqJHNvuZKuGbLsWx+Zk4+6vhIJ/8ZcvhV1d5xZaV93gg9WL1YO3/1Iq5+PQc/i5bH9l2WXUXWUV0SiQKGXkIVjseX5SpOfHnjnPkv8DPfKtrDBCZaa+8D2Y7EFhWbw6FsshbwjcDfNKX3A==)
+  
+# Setting up Azure Information
+azure:
+  clientId: ENC(wJWhYuB/sGiSiwg79V+VJEPKxtLUzVuSWR4DgH3H8U9caW+eUjI1RoeA7Dh43++G)
+  clientSecret: ENC(teIqH3LlWD0qApePOzbM7samXgHtWtV24S1Ljs6SkKn3fkDwRLZXV90mGmKxJgXqcPsQeYl06Cc=)
+  
+# Setting up Github Information
+github:
+  clientId: ENC(JU029ozSACPujSobWPt6aTqmVotm7/G6zOdliVJkyf8=)
+  clientSecret: ENC(QHkqqyhNFiNk1aqqq0FLVsXjLnNwciiACZtH+GNonDWdBSldTFEpvFy63sxM5mOe2HMMYrL73Io=)

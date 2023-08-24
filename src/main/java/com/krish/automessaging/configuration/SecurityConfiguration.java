@@ -93,8 +93,7 @@ public class SecurityConfiguration {
                 .formLogin(Customizer.withDefaults()).logout(Customizer.withDefaults())
                 .oauth2Login(oauth -> oauth.clientRegistrationRepository(clientRegistrationRepository)
                         .defaultSuccessUrl("/api/v1/user/krishna")
-                        .userInfoEndpoint(user -> user.oidcUserService(oidcUserService)).authorizationEndpoint(
-                                authz -> authz.authorizationRequestResolver(this.oidcAuthorizationRequestResolver())))
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .invalidSessionUrl("/login"))
                 .build();

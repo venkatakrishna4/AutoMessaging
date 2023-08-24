@@ -26,10 +26,14 @@ import com.krish.automessaging.utils.UserUtils;
 @Service
 public class OidcUserServiceImpl extends OidcUserService {
 
+    private final UserUtils userUtils;
+    private final JsonParserService jsonParserService;
+
     @Autowired
-    private UserUtils userUtils;
-    @Autowired
-    private JsonParserService jsonParserService;
+    public OidcUserServiceImpl(final UserUtils userUtils, JsonParserService jsonParserService) {
+        this.userUtils = userUtils;
+        this.jsonParserService = jsonParserService;
+    }
 
     protected CurrentOidcUser checkUser(OAuth2UserRequest userRequest, OidcIdToken idToken, OidcUser oauthUser) {
 
@@ -53,21 +57,19 @@ public class OidcUserServiceImpl extends OidcUserService {
 
             user.setEmail(oauthUser.getEmail());
 
-            List<GrantedAuthority> authorities = getRoles(user);
+            List<GrantedAuthority> authorities = getRoles(user, oauthUser);
 
             return new CurrentOidcUser(user.getId(), authorities, idToken, "email", userRequest.getAccessToken());
         }
         return null;
     }
 
-    private List<GrantedAuthority> getRoles(User user) throws OAuth2AuthenticationException {
+    private List<GrantedAuthority> getRoles(User user, OidcUser oauthUser) throws OAuth2AuthenticationException {
         List<String> privileges = new ArrayList<>();
         try {
             Map<String, List<String>> privilegesJson = jsonParserService.parsePrivilegesJson();
-            user.setRoles(List.of("USER"));
             user.getRoles().forEach(u -> privileges.addAll(privilegesJson.get(u)));
         } catch (IOException ignored) {
-
         }
         return new ArrayList<>(privileges.stream().map(SimpleGrantedAuthority::new).toList());
 
@@ -76,21 +78,10 @@ public class OidcUserServiceImpl extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
 
-        try {
-            OidcIdToken token = userRequest.getIdToken();
+        OidcIdToken token = userRequest.getIdToken();
 
-            OidcUser user;
-            try {
-                user = super.loadUser(userRequest);
-
-            } catch (OAuth2AuthenticationException e1) {
-                throw e1;
-            }
-
-            return checkUser(userRequest, token, user);
-        } catch (Exception e) {
-            throw e;
-        }
+        OidcUser user = super.loadUser(userRequest);
+        return checkUser(userRequest, token, user);
     }
 
 }
